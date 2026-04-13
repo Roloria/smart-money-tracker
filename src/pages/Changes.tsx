@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { TrendingUp, TrendingDown, Sparkles, XCircle, Filter } from 'lucide-react';
-import { holdingChanges, institutions, formatNumber, formatPercent } from '../data/mockData';
+import { holdingChanges, institutions, formatNumber, formatPercent, formatShares } from '../data/mockData';
 
 const typeFilters = [
   { label: '全部', value: 'all', icon: null },
@@ -127,5 +127,3 @@ export default function Changes() {
     </div>
   );
 }
-
-function formatShares(n:number):string { if(n>=1e9)return`${(n/1e9).toFixed(2)}B`; if(n>=1e6)return`${(n/1e6).toFixed(2)}M`; if(n>=1e3)return`${(n/1e3).toFixed(1)}K`; return`${n}`; }

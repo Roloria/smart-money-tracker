@@ -91,7 +91,6 @@ export default function SettingsPage() {
             <div><span style={{color:'#52525b'}}>数据周期：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>2025 Q4</span></div>
             <div><span style={{color:'#52525b'}}>追踪机构：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>10</span></div>
             <div><span style={{color:'#52525b'}}>持仓数据：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>模拟数据</span></div>
-            <div><span style={{color:'#52525b'}}>更新说明：</span></div>
           </div>
           <div style={{marginTop:10,fontSize:12,color:'#3f3f46',lineHeight:1.6}}>Phase 1 MVP 使用模拟数据展示界面原型。真实 SEC 13F 数据接入预计 Phase 2 实现（2026 Q1）。</div>
         </div>
