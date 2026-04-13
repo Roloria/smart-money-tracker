@@ -1,9 +1,9 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import {
   BarChart3, Building2, TrendingUp, TrendingDown,
   Search, Bell, Settings, ChevronRight,
   AlertTriangle, CheckCircle2, Globe, Shield,
-  Plus, Trash2, ExternalLink, PieChart as PieIcon
+  Plus, Trash2, ExternalLink, PieChart as PieIcon, RefreshCw, DollarSign
 } from 'lucide-react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -13,6 +13,7 @@ import {
 import {
   institutions, holdings, holdingChanges, alertRules
 } from '../data/mockData'
+import { getStockPrices, convertCurrency, type StockPrice } from '../lib/stockPrices'
 import {
   getAllHoldings, getAllChanges, getMeta,
   getDataSourceLabel, getLastUpdated,
@@ -144,15 +145,25 @@ function DataSourceBadge({ source }: { source?: string }) {
   )
 }
 
-function HoldingsTable({ holdings, onTickerClick }: {
+function HoldingsTable({ holdings, onTickerClick, prices }: {
   holdings: Holding[]; onTickerClick?: (t: string) => void
+  prices?: Map<string, StockPrice>
 }) {
-  const [sort, setSort] = useState<'value' | 'change' | 'shares'>('value')
-  const sorted = useMemo(() => [...holdings].sort((a, b) => {
-    if (sort === 'value') return b.marketValue - a.marketValue
-    if (sort === 'change') return b.changePercent - a.changePercent
-    return b.shares - a.shares
-  }), [holdings, sort])
+  const [sort, setSort] = useState<'value' | 'change' | 'shares' | 'price'>('value')
+  const sorted = useMemo(() => {
+    return [...holdings].sort((a, b) => {
+      const pa = prices?.get(a.stockTicker)
+      const pb = prices?.get(b.stockTicker)
+      if (sort === 'value') {
+        const va = pa ? pa.price * a.shares : a.marketValue
+        const vb = pb ? pb.price * b.shares : b.marketValue
+        return vb - va
+      }
+      if (sort === 'change') return b.changePercent - a.changePercent
+      if (sort === 'price') return (pb?.price || 0) - (pa?.price || 0)
+      return b.shares - a.shares
+    })
+  }, [holdings, sort, prices])
 
   return (
     <div style={{ overflowX: 'auto' }}>
@@ -161,13 +172,13 @@ function HoldingsTable({ holdings, onTickerClick }: {
           <tr style={{ borderBottom: `1px solid ${C.border}` }}>
             {[
               { k: null, l: '标的' },
-              { k: 'value' as const, l: '持仓市值' },
-              { k: 'shares' as const, l: '持股数量' },
-              { k: null, l: '占比' },
+              { k: 'value' as const, l: '当前市值' },
+              { k: 'price' as const, l: '当前价' },
+              { k: null, l: '今日' },
               { k: 'change' as const, l: '季度变化' },
               { k: null, l: '来源' },
             ].map(({ k, l }) => (
-              <th key={l} onClick={() => k && setSort(k)} style={{
+              <th key={l} onClick={() => k && setSort(k as any)} style={{
                 padding: '10px 12px', textAlign: 'left',
                 fontSize: 11, fontWeight: 600, color: C.text3,
                 cursor: k ? 'pointer' : 'default', userSelect: 'none', whiteSpace: 'nowrap',
@@ -176,47 +187,76 @@ function HoldingsTable({ holdings, onTickerClick }: {
           </tr>
         </thead>
         <tbody>
-          {sorted.map((h: Holding) => (
-            <tr key={h.id}
-              onMouseEnter={e => (e.currentTarget.style.background = '#161616')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-              style={{ borderBottom: `1px solid ${C.border}`, transition: 'background 0.1s' }}
-            >
-              <td style={{ padding: '12px', minWidth: 140 }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span
-                      onClick={() => onTickerClick?.(h.stockTicker)}
-                      style={{ fontSize: 13, fontWeight: 700, fontFamily: 'JetBrains Mono, monospace', color: C.blue, cursor: 'pointer' }}
-                    >
-                      {h.stockTicker}
-                    </span>
-                    {h.market === 'HK' && <span style={{ fontSize: 10, color: C.yellow, fontWeight: 600 }}>🇭🇰</span>}
-                    {h.market === 'CN' && <span style={{ fontSize: 10, color: C.red, fontWeight: 600 }}>🇨🇳</span>}
+          {sorted.map((h: Holding) => {
+            const price = prices?.get(h.stockTicker)
+            const curPrice = price?.price || h.marketValue / h.shares
+            const curValue = curPrice * h.shares
+            const dayChg = price?.changePercent || 0
+            return (
+              <tr key={h.id}
+                onMouseEnter={e => (e.currentTarget.style.background = '#161616')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                style={{ borderBottom: `1px solid ${C.border}`, transition: 'background 0.1s' }}
+              >
+                <td style={{ padding: '12px', minWidth: 140 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span
+                        onClick={() => onTickerClick?.(h.stockTicker)}
+                        style={{ fontSize: 13, fontWeight: 700, fontFamily: 'JetBrains Mono, monospace', color: C.blue, cursor: 'pointer' }}
+                      >
+                        {h.stockTicker}
+                      </span>
+                      {h.market === 'HK' && <span style={{ fontSize: 10, color: C.yellow }}>🇭🇰</span>}
+                      {h.market === 'CN' && <span style={{ fontSize: 10, color: C.red }}>🇨🇳</span>}
+                    </div>
+                    <span style={{ fontSize: 11, color: C.text3 }}>{h.stockName}</span>
                   </div>
-                  <span style={{ fontSize: 11, color: C.text3 }}>{h.stockName}</span>
-                </div>
-              </td>
-              <td style={{ padding: '12px', fontFamily: 'JetBrains Mono, monospace', fontSize: 13, fontWeight: 600 }}>
-                {fmt$(h.marketValue)}
-              </td>
-              <td style={{ padding: '12px', fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color: C.text2 }}>
-                {fmtN(h.shares)}
-              </td>
-              <td style={{ padding: '12px', fontSize: 12, color: C.text2 }}>
-                {h.ownershipPercent.toFixed(2)}%
-              </td>
-              <td style={{ padding: '12px' }}>
-                <Pill value={h.changePercent} />
-              </td>
-              <td style={{ padding: '12px' }}>
-                <DataSourceBadge source={(h as any).dataSource} />
-              </td>
-            </tr>
-          ))}
+                </td>
+                <td style={{ padding: '12px', fontFamily: 'JetBrains Mono, monospace', fontSize: 13, fontWeight: 600 }}>
+                  {fmt$(curValue)}
+                </td>
+                <td style={{ padding: '12px', fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color: C.text2 }}>
+                  <div>{curPrice.toFixed(price ? 2 : 0)}</div>
+                  <div style={{ fontSize: 10, color: C.text3 }}>{price ? { US: '$', HK: 'HK$', CN: '¥' }[price.currency] : ''}</div>
+                </td>
+                <td style={{ padding: '12px' }}>
+                  {price ? (
+                    <DayPill value={dayChg} />
+                  ) : (
+                    <span style={{ fontSize: 11, color: C.text3 }}>—</span>
+                  )}
+                </td>
+                <td style={{ padding: '12px' }}>
+                  <Pill value={h.changePercent} />
+                </td>
+                <td style={{ padding: '12px' }}>
+                  <DataSourceBadge source={(h as any).dataSource} />
+                </td>
+              </tr>
+            )
+          })}
         </tbody>
       </table>
     </div>
+  )
+}
+
+// ── Day change pill ────────────────────────────────────────────────────────
+function DayPill({ value }: { value: number }) {
+  if (value === 0) return <span style={{ color: C.text3, fontSize: 12 }}>—</span>
+  const color = value > 0 ? C.green : C.red
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 2,
+      padding: '1px 7px', borderRadius: 9999, fontSize: 12,
+      fontWeight: 600, fontFamily: 'JetBrains Mono, monospace',
+      background: `${color}15`, color,
+      border: `1px solid ${color}30`,
+    }}>
+      {value > 0 ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
+      {value >= 0 ? '+' : ''}{value.toFixed(2)}%
+    </span>
   )
 }
 
@@ -452,6 +492,18 @@ export default function SmartMoney() {
   const [rules, setRules] = useState<AlertRule[]>(alertRules)
   const [showRuleForm, setShowRuleForm] = useState(false)
   const [ruleForm, setRuleForm] = useState({ ticker: '', threshold: 20, email: true, feishu: false })
+  const [prices, setPrices] = useState<Map<string, StockPrice>>(new Map())
+  const [pricesLoading, setPricesLoading] = useState(false)
+
+  // ── Fetch live stock prices ───────────────────────────────────────────────
+  useEffect(() => {
+    const tickers = [...new Set(ALL_HOLDINGS.map(h => h.stockTicker))]
+    setPricesLoading(true)
+    getStockPrices(tickers).then(result => {
+      setPrices(result)
+      setPricesLoading(false)
+    }).catch(() => setPricesLoading(false))
+  }, [])
 
   // ── Data status ─────────────────────────────────────────────────────────────
   const isLiveData = false
@@ -591,7 +643,7 @@ export default function SmartMoney() {
           <div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 28 }}>
               <StatCard icon={Building2} label="覆盖机构" value="10家" sub="全球顶级主权 & 机构基金" color={C.blue} />
-              <StatCard icon={BarChart3} label="总持仓市值" value={fmt$(stats.totalValue)} sub="2025 Q4 最新披露" color={C.yellow} />
+              <StatCard icon={BarChart3} label="披露持仓市值" value={fmt$(stats.totalValue)} sub="2025 Q4 披露值" color={C.yellow} />
               <StatCard icon={TrendingUp} label="本季增持王" value={stats.topGainer.ticker} sub={`${stats.topGainer.institution} · ${pct(stats.topGainer.change)}`} color={C.green} />
               <StatCard icon={TrendingDown} label="本季减持王" value={stats.topLoser.ticker} sub={`${stats.topLoser.institution} · ${pct(stats.topLoser.change)}`} color={C.red} />
             </div>
@@ -628,7 +680,7 @@ export default function SmartMoney() {
                     ))}
                   </div>
                 </div>
-                <HoldingsTable holdings={filteredHoldings} />
+                <HoldingsTable prices={prices} holdings={filteredHoldings} />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap:              14 }}>
                 <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 16 }}>
@@ -701,7 +753,7 @@ export default function SmartMoney() {
                   </button>
                 </div>
                 <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, overflow: 'hidden' }}>
-                  <HoldingsTable holdings={ALL_HOLDINGS.filter((h: Holding) => h.institutionId === selectedInst.id)} />
+                  <HoldingsTable prices={prices} holdings={ALL_HOLDINGS.filter((h: Holding) => h.institutionId === selectedInst.id)} />
                 </div>
               </div>
             ) : (
@@ -766,7 +818,7 @@ export default function SmartMoney() {
                     被 {filteredHoldings.length} 家机构持有
                   </span>
                 </div>
-                <HoldingsTable holdings={filteredHoldings} />
+                <HoldingsTable prices={prices} holdings={filteredHoldings} />
               </div>
             )}
             {searchQuery && filteredHoldings.length === 0 && (
