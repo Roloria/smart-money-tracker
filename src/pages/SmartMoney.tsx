@@ -1,207 +1,177 @@
 import { useState, useMemo } from 'react'
 import {
-  BarChart3,
-  Building2,
-  TrendingUp,
-  TrendingDown,
-  Bell,
-  BellOff,
-  Search,
-  ChevronDown,
-  ChevronUp,
-  ExternalLink,
-  Globe,
-  RefreshCw,
-  AlertTriangle,
-  CheckCircle2,
-  Clock,
-  Shield,
-  Filter,
+  BarChart3, Building2, TrendingUp, TrendingDown,
+  Search, Bell, Settings, ChevronRight,
+  AlertTriangle, CheckCircle2, Globe, Shield,
+  Plus, Trash2, ExternalLink, PieChart as PieIcon
 } from 'lucide-react'
 import {
-  AreaChart,
-  Area,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, PieChart, Pie, Cell,
+  LineChart, Line,
 } from 'recharts'
-import { INSTITUTIONS, HOLDINGS, ALERT_LOGS, STATS_SUMMARY, type Institution, type Holding } from '../lib/mock-data'
-import { formatCurrency, formatShares, formatPercent, changeClass, abbreviateMarket, cn } from '../lib/utils'
+import {
+  institutions, holdings, holdingChanges, alertRules
+} from '../data/mockData'
+import type { Institution, Holding, AlertRule, HoldingChange } from '../types'
 
-// ============================================================
-// Sub-components
-// ============================================================
+// ── Design Tokens ──────────────────────────────────────────────────────────────
+const C = {
+  bg: '#0a0a0a', card: '#141414', cardHover: '#1a1a1a',
+  border: '#1e1e1e', text: '#fafafa', text2: '#a1a1aa', text3: '#52525b',
+  blue: '#38bdf8', green: '#22c55e', red: '#ef4444',
+  yellow: '#f59e0b', purple: '#a78bfa',
+}
+const typeColors: Record<string, string> = {
+  hedge: '#f59e0b', sovereign: '#38bdf8',
+  asset_manager: '#22c55e', bank: '#a1a1aa',
+}
+const typeLabels: Record<string, string> = {
+  hedge: '对冲基金', sovereign: '主权基金',
+  asset_manager: '资产管理', bank: '银行',
+}
 
-function StatCard({ label, value, sub, icon: Icon, accent }: {
-  label: string
-  value: string
-  sub?: string
-  icon: React.ElementType
-  accent?: string
+// ── Helpers ────────────────────────────────────────────────────────────────────
+const fmt$ = (v: number) => {
+  if (v >= 1e12) return `$${(v / 1e12).toFixed(1)}T`
+  if (v >= 1e9) return `$${(v / 1e9).toFixed(1)}B`
+  if (v >= 1e6) return `$${(v / 1e6).toFixed(0)}M`
+  return `$${v}`
+}
+const fmtN = (v: number) => {
+  if (v >= 1e9) return `${(v / 1e9).toFixed(1)}B`
+  if (v >= 1e6) return `${(v / 1e6).toFixed(1)}M`
+  if (v >= 1e3) return `${(v / 1e3).toFixed(0)}K`
+  return `${v}`
+}
+const pct = (v: number) => `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`
+const fmtDate = () => '2025 Q4'
+
+// ── Pill ───────────────────────────────────────────────────────────────────────
+function Pill({ value }: { value: number }) {
+  if (value === 0) return <span style={{ color: C.text3, fontSize: 12 }}>—</span>
+  const color = value > 0 ? C.green : C.red
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 3,
+      padding: '2px 8px', borderRadius: 9999, fontSize: 12,
+      fontWeight: 600, fontFamily: 'JetBrains Mono, monospace',
+      background: `${color}15`, color,
+      border: `1px solid ${color}30`,
+    }}>
+      {value > 0 ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
+      {pct(value)}
+    </span>
+  )
+}
+
+// ── Toggle ────────────────────────────────────────────────────────────────────
+function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <button
+      onClick={() => onChange(!value)}
+      style={{
+        width: 40, height: 22, borderRadius: 11,
+        background: value ? C.blue : '#2a2a2a', border: 'none',
+        cursor: 'pointer', position: 'relative', transition: 'background 0.2s', flexShrink: 0,
+      }}
+    >
+      <div style={{
+        width: 16, height: 16, borderRadius: 8, background: '#fff',
+        position: 'absolute', top: 3,
+        left: value ? 21 : 3, transition: 'left 0.2s',
+      }} />
+    </button>
+  )
+}
+
+// ── Stat Card ─────────────────────────────────────────────────────────────────
+function StatCard({ icon: Icon, label, value, sub, color }: {
+  icon: any; label: string; value: string; sub?: string; color?: string
 }) {
   return (
-    <div className="card p-4 flex items-start gap-3">
-      <div className={cn('p-2.5 rounded-lg', accent || 'bg-accent-blue/10')}>
-        <Icon className={cn('w-4 h-4', accent ? 'text-inherit' : 'text-accent-blue')} />
+    <div style={{
+      background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, padding: 20,
+      display: 'flex', flexDirection: 'column', gap: 12,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{
+          width: 36, height: 36, borderRadius: 10,
+          background: color ? `${color}18` : `${C.blue}18`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <Icon size={18} color={color || C.blue} />
+        </div>
+        <span style={{ fontSize: 12, color: C.text3, fontWeight: 500 }}>{label}</span>
       </div>
       <div>
-        <div className="text-xs text-text-muted mb-0.5">{label}</div>
-        <div className="text-lg font-mono font-bold text-text-primary">{value}</div>
-        {sub && <div className="text-xs text-text-muted mt-0.5">{sub}</div>}
+        <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'JetBrains Mono, monospace', color: C.text, lineHeight: 1 }}>
+          {value}
+        </div>
+        {sub && <div style={{ fontSize: 11, color: C.text3, marginTop: 4 }}>{sub}</div>}
       </div>
     </div>
   )
 }
 
-function InstitutionChip({ inst, active, onClick }: {
-  inst: Institution
-  active: boolean
-  onClick: () => void
+// ── Holdings Table ────────────────────────────────────────────────────────────
+function HoldingsTable({ holdings, onTickerClick }: {
+  holdings: Holding[]; onTickerClick?: (t: string) => void
 }) {
-  const typeColors: Record<string, string> = {
-    hedge: 'border-accent-yellow/40 text-accent-yellow',
-    sovereign: 'border-accent-cyan/40 text-accent-cyan',
-    asset_manager: 'border-accent-blue/40 text-accent-blue',
-    bank: 'border-white/20 text-text-secondary',
-  }
-  const typeLabels: Record<string, string> = {
-    hedge: '对冲基金',
-    sovereign: '主权基金',
-    asset_manager: '资管',
-    bank: '银行',
-  }
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        'institution-chip text-left gap-2',
-        active && inst.id === 0 ? 'border-accent-blue bg-accent-blue/10 text-accent-blue' :
-        active ? 'border-accent-blue bg-accent-blue/10 text-accent-blue' : ''
-      )}
-    >
-      <Building2 className="w-3 h-3 shrink-0" />
-      <div className="flex-1 min-w-0">
-        <div className="font-medium truncate">{inst.nameCn}</div>
-        <div className={cn('text-xs mt-0.5 px-1.5 py-0.5 rounded border inline-block', typeColors[inst.type])}>
-          {typeLabels[inst.type]}
-        </div>
-      </div>
-    </button>
-  )
-}
-
-function ChangeBadge({ value, label }: { value: number; label?: string }) {
-  if (value === 0) return <span className="text-text-muted text-xs">—</span>
-  const cls = value > 0 ? 'text-gain' : 'text-loss'
-  return (
-    <span className={cn('inline-flex items-center gap-0.5 text-xs font-mono font-semibold', cls)}>
-      {value > 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-      {formatPercent(value)}
-      {label && <span className="text-text-muted font-normal ml-1">{label}</span>}
-    </span>
-  )
-}
-
-function HoldingsTable({ holdings, institutionName }: { holdings: Holding[]; institutionName?: string }) {
-  const [sortField, setSortField] = useState<'value' | 'change' | 'shares'>('value')
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
-
-  const sorted = useMemo(() => {
-    return [...holdings].sort((a, b) => {
-      let va = 0, vb = 0
-      if (sortField === 'value') { va = a.marketValueUsd; vb = b.marketValueUsd }
-      if (sortField === 'change') { va = a.sharesChangePercent || 0; vb = b.sharesChangePercent || 0 }
-      if (sortField === 'shares') { va = a.shares; vb = b.shares }
-      return sortDir === 'desc' ? vb - va : va - vb
-    })
-  }, [holdings, sortField, sortDir])
-
-  const toggleSort = (field: typeof sortField) => {
-    if (sortField === field) setSortDir(d => d === 'desc' ? 'asc' : 'desc')
-    else { setSortField(field); setSortDir('desc') }
-  }
-
-  const SortIcon = ({ field }: { field: typeof sortField }) => {
-    if (sortField !== field) return null
-    return sortDir === 'desc'
-      ? <ChevronDown className="w-3 h-3 inline ml-1" />
-      : <ChevronUp className="w-3 h-3 inline ml-1" />
-  }
+  const [sort, setSort] = useState<'value' | 'change' | 'shares'>('value')
+  const sorted = useMemo(() => [...holdings].sort((a, b) => {
+    if (sort === 'value') return b.marketValue - a.marketValue
+    if (sort === 'change') return b.changePercent - a.changePercent
+    return b.shares - a.shares
+  }), [holdings, sort])
 
   return (
-    <div className="overflow-x-auto">
-      <table className="data-table">
+    <div style={{ overflowX: 'auto' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
-          <tr>
-            <th className="w-10">#</th>
-            <th>标的</th>
-            <th>市场</th>
-            <th className="cursor-pointer" onClick={() => toggleSort('value')}>
-              <span className="inline-flex items-center">持仓市值（USD）<SortIcon field="value" /></span>
-            </th>
-            <th className="cursor-pointer" onClick={() => toggleSort('shares')}>
-              <span className="inline-flex items-center">持股数量 <SortIcon field="shares" /></span>
-            </th>
-            <th>持股占比</th>
-            <th className="cursor-pointer" onClick={() => toggleSort('change')}>
-              <span className="inline-flex items-center">季度变化 <SortIcon field="change" /></span>
-            </th>
-            <th>所属机构数</th>
+          <tr style={{ borderBottom: `1px solid ${C.border}` }}>
+            {[
+              { k: null, l: '标的' },
+              { k: 'value' as const, l: '持仓市值' },
+              { k: 'shares' as const, l: '持股数量' },
+              { k: null, l: '占比' },
+              { k: 'change' as const, l: '季度变化' },
+            ].map(({ k, l }) => (
+              <th key={l} onClick={() => k && setSort(k)} style={{
+                padding: '10px 12px', textAlign: 'left',
+                fontSize: 11, fontWeight: 600, color: C.text3,
+                cursor: k ? 'pointer' : 'default', userSelect: 'none', whiteSpace: 'nowrap',
+              }}>{l}</th>
+            ))}
           </tr>
         </thead>
         <tbody>
-          {sorted.length === 0 ? (
-            <tr>
-              <td colSpan={8} className="text-center py-12 text-text-muted">
-                <div className="flex flex-col items-center gap-2">
-                  <Search className="w-8 h-8 opacity-30" />
-                  <div>暂无数据</div>
-                </div>
-              </td>
-            </tr>
-          ) : sorted.map((h, i) => (
-            <tr key={h.id} className="animate-fade-in" style={{ animationDelay: `${i * 30}ms` }}>
-              <td className="text-text-muted text-xs">{i + 1}</td>
-              <td>
-                <div className="flex flex-col">
-                  <span className="font-mono font-semibold text-text-primary">{h.ticker}</span>
-                  <span className="text-xs text-text-muted truncate max-w-[160px]">{h.stockName}</span>
-                </div>
-              </td>
-              <td>
-                <span className="text-xs">{abbreviateMarket(h.market)}</span>
-              </td>
-              <td className="font-mono font-medium">
-                {formatCurrency(h.marketValueUsd)}
-              </td>
-              <td className="font-mono text-text-secondary text-xs">
-                {formatShares(h.shares)}
-              </td>
-              <td>
-                <div className="flex flex-col gap-1">
-                  <span className="font-mono text-xs">{h.ownershipPercent.toFixed(2)}%</span>
-                  <div className="w-16 h-1 bg-bg-secondary rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-accent-blue rounded-full"
-                      style={{ width: `${Math.min(h.ownershipPercent * 5, 100)}%` }}
-                    />
-                  </div>
-                </div>
-              </td>
-              <td>
-                <ChangeBadge value={h.sharesChangePercent || 0} label="shares" />
-              </td>
-              <td>
-                <span className="badge badge-institution">
-                  {HOLDINGS.filter(x => x.ticker === h.ticker).length}
+          {sorted.map((h: Holding) => (
+            <tr key={h.id}
+              onMouseEnter={e => (e.currentTarget.style.background = '#161616')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+              style={{ borderBottom: `1px solid ${C.border}`, transition: 'background 0.1s' }}
+            >
+              <td style={{ padding: '12px', minWidth: 140 }}>
+                <span
+                  onClick={() => onTickerClick?.(h.stockTicker)}
+                  style={{ fontSize: 13, fontWeight: 700, fontFamily: 'JetBrains Mono, monospace', color: C.blue, cursor: 'pointer' }}
+                >
+                  {h.stockTicker}
                 </span>
+                <div style={{ fontSize: 11, color: C.text3, marginTop: 2 }}>{h.stockName}</div>
+              </td>
+              <td style={{ padding: '12px', fontFamily: 'JetBrains Mono, monospace', fontSize: 13, fontWeight: 600 }}>
+                {fmt$(h.marketValue)}
+              </td>
+              <td style={{ padding: '12px', fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color: C.text2 }}>
+                {fmtN(h.shares)}
+              </td>
+              <td style={{ padding: '12px', fontSize: 12, color: C.text2 }}>
+                {h.ownershipPercent.toFixed(2)}%
+              </td>
+              <td style={{ padding: '12px' }}>
+                <Pill value={h.changePercent} />
               </td>
             </tr>
           ))}
@@ -211,35 +181,181 @@ function HoldingsTable({ holdings, institutionName }: { holdings: Holding[]; ins
   )
 }
 
-function MarketAllocationChart({ holdings }: { holdings: Holding[] }) {
-  const data = [
-    { name: '美国 🇺🇸', value: holdings.filter(h => h.market === 'US').reduce((s, h) => s + h.marketValueUsd, 0), color: '#3b82f6' },
-    { name: '香港 🇭🇰', value: holdings.filter(h => h.market === 'HK').reduce((s, h) => s + h.marketValueUsd, 0), color: '#f59e0b' },
-    { name: '中国A股 🇨🇳', value: holdings.filter(h => h.market === 'CN').reduce((s, h) => s + h.marketValueUsd, 0), color: '#ef4444' },
-  ].filter(d => d.value > 0)
-
-  if (data.length === 0) return null
-  const total = data.reduce((s, d) => s + d.value, 0)
+// ── Institution Card ──────────────────────────────────────────────────────────
+function InstitutionCard({ inst, holdings, onClick }: {
+  inst: Institution; holdings: Holding[]; onClick: () => void
+}) {
+  const ih = holdings.filter((h: Holding) => h.institutionId === inst.id)
+  const top = [...ih].sort((a: Holding, b: Holding) => b.marketValue - a.marketValue).slice(0, 3)
+  const gains = ih.filter((h: Holding) => h.changePercent > 0).length
+  const losses = ih.filter((h: Holding) => h.changePercent < 0).length
+  const total = ih.reduce((s: number, h: Holding) => s + h.marketValue, 0)
 
   return (
-    <div className="flex items-center gap-4">
-      <div className="w-32 h-32">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie data={data} cx="50%" cy="50%" innerRadius={36} outerRadius={56} dataKey="value" strokeWidth={0}>
-              {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Pie>
-          </PieChart>
-        </ResponsiveContainer>
+    <div onClick={onClick} style={{
+      background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 20,
+      cursor: 'pointer', transition: 'all 0.15s',
+    }}
+    onMouseEnter={e => {
+      const el = e.currentTarget as HTMLElement
+      el.style.borderColor = inst.color + '55'
+      el.style.background = C.cardHover
+    }}
+    onMouseLeave={e => {
+      const el = e.currentTarget as HTMLElement
+      el.style.borderColor = C.border
+      el.style.background = C.card
+    }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 16 }}>
+        <div style={{
+          width: 44, height: 44, borderRadius: 12,
+          background: `${inst.color}20`, border: `1.5px solid ${inst.color}40`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 20, fontWeight: 800, color: inst.color,
+          fontFamily: 'JetBrains Mono, monospace', flexShrink: 0,
+        }}>
+          {inst.name[0]}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: C.text, marginBottom: 2,
+            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {inst.name}
+          </div>
+          <div style={{ fontSize: 11, color: C.text3, marginBottom: 6 }}>{inst.nameEn}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Globe size={11} color={C.text3} />
+            <span style={{ fontSize: 11, color: C.text3 }}>{inst.country}</span>
+            <span style={{ width: 1, height: 10, background: '#333', margin: '0 2px' }} />
+            <span style={{
+              fontSize: 11, color: typeColors[inst.type],
+              background: `${typeColors[inst.type]}18`,
+              padding: '1px 6px', borderRadius: 9999,
+              border: `1px solid ${typeColors[inst.type]}33`,
+            }}>
+              {typeLabels[inst.type]}
+            </span>
+          </div>
+        </div>
+        <ChevronRight size={16} color={C.text3} style={{ flexShrink: 0, marginTop: 4 }} />
       </div>
-      <div className="flex flex-col gap-2">
-        {data.map(d => (
-          <div key={d.name} className="flex items-center gap-2 text-xs">
-            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: d.color }} />
-            <span className="text-text-secondary">{d.name}</span>
-            <span className="font-mono font-semibold text-text-primary ml-auto pl-4">
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
+        <div style={{ background: '#0d0d0d', borderRadius: 8, padding: '10px 12px' }}>
+          <div style={{ fontSize: 10, color: C.text3, marginBottom: 3 }}>持仓市值</div>
+          <div style={{ fontSize: 14, fontWeight: 700, fontFamily: 'JetBrains Mono, monospace', color: C.text }}>{fmt$(total)}</div>
+        </div>
+        <div style={{ background: '#0d0d0d', borderRadius: 8, padding: '10px 12px' }}>
+          <div style={{ fontSize: 10, color: C.text3, marginBottom: 3 }}>持股数</div>
+          <div style={{ fontSize: 14, fontWeight: 700, fontFamily: 'JetBrains Mono, monospace', color: C.text }}>{inst.holdingCount}</div>
+        </div>
+      </div>
+      <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+        <span style={{ fontSize: 11, color: C.green, fontWeight: 600 }}>↑{gains}增持</span>
+        <span style={{ color: '#333' }}>·</span>
+        <span style={{ fontSize: 11, color: C.red, fontWeight: 600 }}>↓{losses}减持</span>
+      </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+        {top.map((h: Holding) => (
+          <div key={h.id} style={{
+            background: '#0d0d0d', border: '1px solid #222',
+            borderRadius: 5, padding: '3px 8px',
+            display: 'flex', alignItems: 'center', gap: 5,
+          }}>
+            <span style={{ fontSize: 11, fontWeight: 700, fontFamily: 'JetBrains Mono, monospace', color: C.blue }}>
+              {h.stockTicker}
+            </span>
+            <Pill value={h.changePercent} />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ── Changes Table ─────────────────────────────────────────────────────────────
+function ChangesTable({ changes }: { changes: HoldingChange[] }) {
+  const typeLabel: Record<string, string> = {
+    increase: '增持', decrease: '减持', new: '新建仓', exited: '清仓',
+  }
+  const typeColor: Record<string, string> = {
+    increase: C.green, decrease: C.red, new: C.blue, exited: C.yellow,
+  }
+  return (
+    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+      <thead>
+        <tr style={{ borderBottom: `1px solid ${C.border}` }}>
+          {['标的', '机构', '类型', '变化幅度', '上季持仓', '本季持仓', '季度'].map(l => (
+            <th key={l} style={{ padding: '10px 12px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: C.text3 }}>
+              {l}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {changes.map((c: HoldingChange) => {
+          const inst = institutions.find((x: Institution) => x.id === c.institutionId)
+          return (
+            <tr key={c.id}
+              onMouseEnter={e => (e.currentTarget.style.background = '#161616')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+              style={{ borderBottom: `1px solid ${C.border}`, transition: 'background 0.1s' }}
+            >
+              <td style={{ padding: '12px' }}>
+                <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'JetBrains Mono, monospace', color: C.blue }}>
+                  {c.stockTicker}
+                </span>
+                <div style={{ fontSize: 11, color: C.text3, marginTop: 2 }}>{c.stockName}</div>
+              </td>
+              <td style={{ padding: '12px' }}>
+                <span style={{ fontSize: 12, color: inst?.color || C.text2 }}>{inst?.name}</span>
+              </td>
+              <td style={{ padding: '12px' }}>
+                <span style={{
+                  fontSize: 11, color: typeColor[c.changeType],
+                  background: `${typeColor[c.changeType]}18`,
+                  padding: '2px 8px', borderRadius: 9999, fontWeight: 600,
+                }}>
+                  {typeLabel[c.changeType]}
+                </span>
+              </td>
+              <td style={{ padding: '12px' }}><Pill value={c.changePercent} /></td>
+              <td style={{ padding: '12px', fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color: C.text2 }}>
+                {fmtN(c.previousShares)}
+              </td>
+              <td style={{ padding: '12px', fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color: C.text2 }}>
+                {fmtN(c.currentShares)}
+              </td>
+              <td style={{ padding: '12px', fontSize: 11, color: C.text3 }}>{c.quarter}</td>
+            </tr>
+          )
+        })}
+      </tbody>
+    </table>
+  )
+}
+
+// ── Market Pie ─────────────────────────────────────────────────────────────────
+function MarketPie({ holdings }: { holdings: Holding[] }) {
+  const data = [
+    { name: '美国 🇺🇸', value: holdings.filter((h: Holding) => h.market === 'US').reduce((s: number, h: Holding) => s + h.marketValue, 0) },
+    { name: '香港 🇭🇰', value: holdings.filter((h: Holding) => h.market === 'HK').reduce((s: number, h: Holding) => s + h.marketValue, 0) },
+    { name: 'A股 🇨🇳', value: holdings.filter((h: Holding) => h.market === 'CN').reduce((s: number, h: Holding) => s + h.marketValue, 0) },
+  ].filter(d => d.value > 0)
+  const total = data.reduce((s: number, d) => s + d.value, 0)
+  const COLORS = [C.blue, C.yellow, C.red]
+  if (total === 0) return <div style={{ color: C.text3, fontSize: 12 }}>暂无数据</div>
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+      <PieChart width={120} height={120}>
+        <Pie data={data} cx="50%" cy="50%" innerRadius={36} outerRadius={56} dataKey="value" strokeWidth={0}>
+          {data.map((_: any, i: number) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+        </Pie>
+      </PieChart>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {data.map((d: { name: string; value: number }, i: number) => (
+          <div key={d.name} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ width: 8, height: 8, borderRadius: 2, background: COLORS[i % COLORS.length] }} />
+            <span style={{ fontSize: 12, color: C.text2 }}>{d.name}</span>
+            <span style={{ fontSize: 12, fontWeight: 700, fontFamily: 'JetBrains Mono, monospace', color: C.text, marginLeft: 'auto' }}>
               {((d.value / total) * 100).toFixed(1)}%
             </span>
           </div>
@@ -249,35 +365,26 @@ function MarketAllocationChart({ holdings }: { holdings: Holding[] }) {
   )
 }
 
-function TopChangesChart({ holdings }: { holdings: Holding[] }) {
-  const topGainers = [...holdings]
-    .filter(h => (h.sharesChangePercent || 0) > 0)
-    .sort((a, b) => (b.sharesChangePercent || 0) - (a.sharesChangePercent || 0))
-    .slice(0, 6)
-  const topLosers = [...holdings]
-    .filter(h => (h.sharesChangePercent || 0) < 0)
-    .sort((a, b) => (a.sharesChangePercent || 0) - (b.sharesChangePercent || 0))
-    .slice(0, 6)
-  const data = [
-    ...topLosers.map(h => ({ ticker: h.ticker, pct: h.sharesChangePercent || 0, inst: INSTITUTIONS.find(i => i.id === h.institutionId)?.nameCn || '' })),
-    ...topGainers.map(h => ({ ticker: h.ticker, pct: h.sharesChangePercent || 0, inst: INSTITUTIONS.find(i => i.id === h.institutionId)?.nameCn || '' })),
-  ]
+// ── Changes Bar ────────────────────────────────────────────────────────────────
+function ChangesBar({ changes }: { changes: HoldingChange[] }) {
+  const data = [...changes]
+    .sort((a: HoldingChange, b: HoldingChange) => Math.abs(b.changePercent) - Math.abs(a.changePercent))
+    .slice(0, 8)
+    .map((c: HoldingChange) => ({ ticker: c.stockTicker, pct: c.changePercent }))
 
   return (
-    <ResponsiveContainer width="100%" height={220}>
+    <ResponsiveContainer width="100%" height={200}>
       <BarChart data={data} margin={{ left: -10 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#1e2030" />
         <XAxis dataKey="ticker" tick={{ fill: '#64748b', fontSize: 11, fontFamily: 'JetBrains Mono' }} />
         <YAxis tick={{ fill: '#64748b', fontSize: 11, fontFamily: 'JetBrains Mono' }} tickFormatter={v => `${v}%`} />
         <Tooltip
           contentStyle={{ backgroundColor: '#13141f', border: '1px solid #1e2030', borderRadius: 8, fontSize: 12 }}
-          labelStyle={{ color: '#94a3b8' }}
-          formatter={(val) => [formatPercent(Number(val)), '季度变化']}
-          itemStyle={{ color: '#e2e8f0' }}
+          formatter={(val: any) => [typeof val === 'number' ? `${val > 0 ? '+' : ''}${val.toFixed(2)}%` : val, '变化']}
         />
         <Bar dataKey="pct" radius={[3, 3, 0, 0]}>
-          {data.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={entry.pct >= 0 ? '#22c55e' : '#ef4444'} />
+          {data.map((entry: { pct: number }, i: number) => (
+            <Cell key={i} fill={entry.pct >= 0 ? C.green : C.red} />
           ))}
         </Bar>
       </BarChart>
@@ -285,368 +392,551 @@ function TopChangesChart({ holdings }: { holdings: Holding[] }) {
   )
 }
 
-function AlertLogRow({ log }: { log: typeof ALERT_LOGS[0] }) {
-  const isGain = log.direction === 'increase'
-  return (
-    <div className={cn('alert-card p-4 flex items-center gap-3 animate-fade-in', isGain ? 'alert-card-gain' : 'alert-card-loss')}>
-      <div className={cn('p-2 rounded-lg shrink-0', isGain ? 'bg-gain/10' : 'bg-loss/10')}>
-        {isGain
-          ? <TrendingUp className="w-4 h-4 text-gain" />
-          : <TrendingDown className="w-4 h-4 text-loss" />
-        }
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="font-mono font-bold text-text-primary">{log.ticker}</span>
-          <span className="text-text-muted text-xs">by {log.institutionName}</span>
-          <span className={cn('badge ml-auto font-mono', isGain ? 'badge-gain' : 'badge-loss')}>
-            {formatPercent(log.changePct)}
-          </span>
-        </div>
-        <div className="flex items-center gap-2 mt-1 text-xs text-text-muted">
-          <Clock className="w-3 h-3" />
-          <span>{log.quarter}</span>
-          <span>·</span>
-          <span>{log.notifiedAt}</span>
-          <span>·</span>
-          <span className="uppercase">{log.channel}</span>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ============================================================
-// Main Page
-// ============================================================
+// ── App ────────────────────────────────────────────────────────────────────────
+type Tab = 'overview' | 'institutions' | 'search' | 'changes' | 'alerts' | 'settings'
+const NAV: { key: Tab; label: string; icon: any }[] = [
+  { key: 'overview', label: '总览', icon: BarChart3 },
+  { key: 'institutions', label: '机构', icon: Building2 },
+  { key: 'search', label: '搜索', icon: Search },
+  { key: 'changes', label: '异动', icon: TrendingUp },
+  { key: 'alerts', label: '预警', icon: Bell },
+  { key: 'settings', label: '设置', icon: Settings },
+]
 
 export default function SmartMoney() {
-  const [selectedInst, setSelectedInst] = useState<number | null>(null)
-  const [selectedMarket, setSelectedMarket] = useState<'ALL' | 'US' | 'HK' | 'CN'>('ALL')
-  const [search, setSearch] = useState('')
-  const [showOnlyAlerts, setShowOnlyAlerts] = useState(false)
-  const [activeTab, setActiveTab] = useState<'holdings' | 'alerts' | 'overview'>('overview')
+  const [tab, setTab] = useState<Tab>('overview')
+  const [instFilter, setInstFilter] = useState<number | null>(null)
+  const [marketFilter, setMarketFilter] = useState<'ALL' | 'US' | 'HK' | 'CN'>('ALL')
+  const [changeType, setChangeType] = useState<'all' | 'increase' | 'decrease' | 'new' | 'exited'>('all')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [alertOnly, setAlertOnly] = useState(false)
+  const [rules, setRules] = useState<AlertRule[]>(alertRules)
+  const [showRuleForm, setShowRuleForm] = useState(false)
+  const [ruleForm, setRuleForm] = useState({ ticker: '', threshold: 20, email: true, feishu: false })
+
+  // Compute stats
+  const stats = useMemo(() => {
+    const totalValue = holdings.reduce((s: number, h: Holding) => s + h.marketValue, 0)
+    const topGainer = [...holdings].sort((a: Holding, b: Holding) => b.changePercent - a.changePercent)[0]
+    const topLoser = [...holdings].sort((a: Holding, b: Holding) => a.changePercent - b.changePercent)[0]
+    const inst = topGainer ? institutions.find((x: Institution) => x.id === topGainer.institutionId) : null
+    const loserInst = topLoser ? institutions.find((x: Institution) => x.id === topLoser.institutionId) : null
+    return {
+      totalValue,
+      topGainer: { ticker: topGainer?.stockTicker || '', institution: inst?.name || '', change: topGainer?.changePercent || 0 },
+      topLoser: { ticker: topLoser?.stockTicker || '', institution: loserInst?.name || '', change: topLoser?.changePercent || 0 },
+      lastUpdated: '2025 Q4',
+    }
+  }, [])
 
   const filteredHoldings = useMemo(() => {
-    let list = HOLDINGS
-    if (selectedInst !== null && selectedInst !== 0) {
-      list = list.filter(h => h.institutionId === selectedInst)
+    let list = holdings as Holding[]
+    if (instFilter !== null) list = list.filter((h: Holding) => h.institutionId === instFilter)
+    if (marketFilter !== 'ALL') list = list.filter((h: Holding) => h.market === marketFilter)
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase()
+      list = list.filter((h: Holding) => h.stockTicker.toLowerCase().includes(q) || h.stockName.includes(q))
     }
-    if (selectedMarket !== 'ALL') {
-      list = list.filter(h => h.market === selectedMarket)
-    }
-    if (search.trim()) {
-      const q = search.toLowerCase()
-      list = list.filter(h =>
-        h.ticker.toLowerCase().includes(q) ||
-        h.stockName.toLowerCase().includes(q)
-      )
-    }
-    if (showOnlyAlerts) {
-      list = list.filter(h => Math.abs(h.sharesChangePercent || 0) >= 20)
-    }
+    if (alertOnly) list = list.filter((h: Holding) => Math.abs(h.changePercent) >= 20)
     return list
-  }, [selectedInst, selectedMarket, search, showOnlyAlerts])
+  }, [instFilter, marketFilter, searchQuery, alertOnly])
 
-  const institutionName = selectedInst !== null && selectedInst !== 0
-    ? INSTITUTIONS.find(i => i.id === selectedInst)?.nameCn || ''
-    : undefined
+  const filteredChanges = useMemo(() => {
+    let list = holdingChanges as HoldingChange[]
+    if (changeType !== 'all') list = list.filter((c: HoldingChange) => c.changeType === changeType)
+    if (instFilter !== null) list = list.filter((c: HoldingChange) => c.institutionId === instFilter)
+    return [...list].sort((a: HoldingChange, b: HoldingChange) => Math.abs(b.changePercent) - Math.abs(a.changePercent))
+  }, [changeType, instFilter])
 
-  const _sectors = ['全部', '对冲基金', '主权基金', '资产管理', '银行']
+  const selectedInst = instFilter !== null ? institutions.find((x: Institution) => x.id === instFilter) : null
+
+  const addRule = () => {
+    if (!ruleForm.ticker) return
+    setRules((prev: AlertRule[]) => [{
+      id: Date.now(), stockTicker: ruleForm.ticker.toUpperCase(),
+      stockName: ruleForm.ticker.toUpperCase(), institutionIds: 'all',
+      thresholdPercent: ruleForm.threshold, notifyEmail: ruleForm.email,
+      notifyFeishu: ruleForm.feishu, isActive: true,
+      createdAt: new Date().toISOString().slice(0, 10),
+    } as AlertRule, ...prev])
+    setRuleForm({ ticker: '', threshold: 20, email: true, feishu: false })
+    setShowRuleForm(false)
+  }
 
   return (
-    <div className="min-h-screen bg-bg-primary text-text-primary">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-bg-primary/95 backdrop-blur border-b border-border">
-        <div className="px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-accent-blue/10 rounded-lg">
-              <Shield className="w-5 h-5 text-accent-blue" />
+    <div style={{ minHeight: '100vh', background: C.bg, color: C.text, fontFamily: 'Inter, system-ui, sans-serif' }}>
+      {/* ── Header ──────────────────────────────────────────────────────────── */}
+      <header style={{
+        position: 'sticky', top: 0, zIndex: 50,
+        background: `${C.bg}ee`, backdropFilter: 'blur(12px)',
+        borderBottom: `1px solid ${C.border}`,
+      }}>
+        <div style={{
+          background: `linear-gradient(90deg, ${C.blue}08 0%, transparent 60%)`,
+          borderBottom: `1px solid ${C.border}`,
+          padding: '10px 24px', display: 'flex', alignItems: 'center', gap: 20, overflow: 'hidden',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            <div style={{ width: 28, height: 28, borderRadius: 8, background: `${C.blue}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Shield size={15} color={C.blue} />
             </div>
             <div>
-              <h1 className="text-base font-bold text-text-primary tracking-tight">
-                聪明钱去了哪儿
-              </h1>
-              <p className="text-xs text-text-muted">
-                Smart Money Tracker · 10家机构 · 季度13F披露
-              </p>
+              <div style={{ fontSize: 13, fontWeight: 700, color: C.text, lineHeight: 1.2 }}>聪明钱去了哪儿</div>
+              <div style={{ fontSize: 10, color: C.text3 }}>Smart Money Tracker · 10家机构</div>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="badge badge-gain text-xs flex items-center gap-1">
-              <CheckCircle2 className="w-3 h-3" />
-              最新: {STATS_SUMMARY.lastUpdated}
-            </div>
-            <button className="flex items-center gap-1.5 text-xs text-text-muted hover:text-text-primary transition-colors px-3 py-1.5 rounded-lg hover:bg-bg-hover">
-              <RefreshCw className="w-3.5 h-3.5" />
-              刷新数据
-            </button>
-          </div>
-        </div>
-
-        {/* Ticker tape */}
-        <div className="ticker-wrap bg-bg-secondary border-t border-border px-4 py-2 flex items-center gap-6">
-          <div className="ticker">
-            {[...filteredHoldings, ...filteredHoldings].map((h, i) => (
-              <div key={i} className="ticker-badge mr-6">
-                <span className="symbol">{h.ticker}</span>
-                <span className="value">{formatCurrency(h.marketValueUsd)}</span>
-                <span className={cn('font-semibold', changeClass(h.sharesChangePercent || 0))}>
-                  {formatPercent(h.sharesChangePercent || 0)}
-                </span>
+          <div style={{ flex: 1, display: 'flex', gap: 20, overflow: 'hidden', fontSize: 12, fontFamily: 'JetBrains Mono, monospace' }}>
+            {institutions.slice(0, 7).map((inst: Institution) => (
+              <div key={inst.id} style={{ display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>
+                <span style={{ color: inst.color, fontWeight: 700 }}>{inst.name}</span>
+                <span style={{ color: C.text3 }}>{fmtN(inst.totalValue)}</span>
               </div>
             ))}
           </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 5,
+              padding: '4px 10px', borderRadius: 9999,
+              background: `${C.green}12`, border: `1px solid ${C.green}30`,
+              fontSize: 11, color: C.green,
+            }}>
+              <CheckCircle2 size={11} />
+              {stats.lastUpdated}
+            </div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', padding: '0 24px', gap: 2 }}>
+          {NAV.map(({ key, label, icon: Icon }) => (
+            <button key={key} onClick={() => setTab(key)} style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '10px 14px', border: 'none',
+              background: 'transparent', cursor: 'pointer',
+              fontSize: 13, fontWeight: tab === key ? 600 : 400,
+              color: tab === key ? C.blue : C.text3,
+              borderBottom: `2px solid ${tab === key ? C.blue : 'transparent'}`,
+              marginBottom: -1, transition: 'all 0.15s',
+            }}>
+              <Icon size={14} />
+              {label}
+              {key === 'alerts' && rules.filter((r: AlertRule) => r.isActive).length > 0 && (
+                <span style={{ background: `${C.blue}30`, color: C.blue, fontSize: 10, padding: '1px 5px', borderRadius: 9999, fontWeight: 700 }}>
+                  {rules.filter((r: AlertRule) => r.isActive).length}
+                </span>
+              )}
+            </button>
+          ))}
         </div>
       </header>
 
-      <div className="px-6 py-6 flex gap-6">
-        {/* Sidebar */}
-        <aside className="w-64 shrink-0 space-y-4">
-          {/* Stats */}
-          <div className="card p-4 space-y-3">
-            <div className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3">
-              整体概览
-            </div>
-            <StatCard
-              label="覆盖机构"
-              value={`${STATS_SUMMARY.totalInstitutions} 家`}
-              sub="10家顶级投资机构"
-              icon={Building2}
-              accent="bg-accent-blue/10 text-accent-blue"
-            />
-            <StatCard
-              label="总持仓市值"
-              value={formatCurrency(STATS_SUMMARY.totalValueUsd)}
-              sub="截至最新披露季度"
-              icon={BarChart3}
-              accent="bg-accent-yellow/10 text-accent-yellow"
-            />
-            <StatCard
-              label="本季增持王"
-              value={STATS_SUMMARY.topGainer.ticker}
-              sub={`${STATS_SUMMARY.topGainer.institution} · ${formatPercent(STATS_SUMMARY.topGainer.change)}`}
-              icon={TrendingUp}
-              accent="bg-gain/10 text-gain"
-            />
-            <StatCard
-              label="本季减持王"
-              value={STATS_SUMMARY.topLoser.ticker}
-              sub={`${STATS_SUMMARY.topLoser.institution} · ${formatPercent(STATS_SUMMARY.topLoser.change)}`}
-              icon={TrendingDown}
-              accent="bg-loss/10 text-loss"
-            />
-          </div>
+      {/* ── Main ──────────────────────────────────────────────────────────── */}
+      <main style={{ padding: 24, maxWidth: 1400, margin: '0 auto' }}>
 
-          {/* Institution filter */}
-          <div className="card p-4 space-y-3">
-            <div className="text-xs font-semibold text-text-muted uppercase tracking-wider">
-              机构筛选
+        {/* ══ OVERVIEW ═══════════════════════════════════════════════════════ */}
+        {tab === 'overview' && (
+          <div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 28 }}>
+              <StatCard icon={Building2} label="覆盖机构" value="10家" sub="全球顶级主权 & 机构基金" color={C.blue} />
+              <StatCard icon={BarChart3} label="总持仓市值" value={fmt$(stats.totalValue)} sub="2025 Q4 最新披露" color={C.yellow} />
+              <StatCard icon={TrendingUp} label="本季增持王" value={stats.topGainer.ticker} sub={`${stats.topGainer.institution} · ${pct(stats.topGainer.change)}`} color={C.green} />
+              <StatCard icon={TrendingDown} label="本季减持王" value={stats.topLoser.ticker} sub={`${stats.topLoser.institution} · ${pct(stats.topLoser.change)}`} color={C.red} />
             </div>
-            <button
-              onClick={() => setSelectedInst(null)}
-              className={cn('institution-chip w-full justify-between', selectedInst === null ? 'border-accent-blue bg-accent-blue/10 text-accent-blue' : '')}
-            >
-              <span className="font-medium">全部机构</span>
-              <span className="badge badge-gain text-xs ml-auto mr-1">
-                {INSTITUTIONS.length}
-              </span>
-            </button>
-            <div className="space-y-1.5">
-              {INSTITUTIONS.map(inst => (
-                <InstitutionChip
-                  key={inst.id}
-                  inst={inst}
-                  active={selectedInst === inst.id}
-                  onClick={() => setSelectedInst(prev => prev === inst.id ? null : inst.id)}
-                />
-              ))}
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+              <button onClick={() => setAlertOnly(v => !v)} style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '7px 14px', borderRadius: 8, cursor: 'pointer',
+                background: alertOnly ? `${C.yellow}18` : 'transparent',
+                border: `1px solid ${alertOnly ? C.yellow + '50' : C.border}`,
+                color: alertOnly ? C.yellow : C.text3, fontSize: 12, fontWeight: 500,
+              }}>
+                <AlertTriangle size={13} />仅显示大幅异动（≥20%）
+              </button>
+              <div style={{ marginLeft: 'auto', fontSize: 12, color: C.text3, fontFamily: 'JetBrains Mono, monospace' }}>
+                {filteredHoldings.length} 条记录
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 16 }}>
+              <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, overflow: 'hidden' }}>
+                <div style={{ padding: '14px 20px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <span style={{ fontSize: 13, fontWeight: 600 }}>持仓明细</span>
+                  <div style={{ display: 'flex', gap: 6, marginLeft: 'auto' }}>
+                    {(['ALL', 'US', 'HK', 'CN'] as const).map(m => (
+                      <button key={m} onClick={() => setMarketFilter(m)} style={{
+                        padding: '3px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600,
+                        background: marketFilter === m ? `${C.blue}20` : 'transparent',
+                        border: `1px solid ${marketFilter === m ? C.blue + '40' : C.border}`,
+                        color: marketFilter === m ? C.blue : C.text3, cursor: 'pointer',
+                      }}>
+                        {{ ALL: '全部', US: '🇺🇸美股', HK: '🇭🇰港股', CN: '🇨🇳A股' }[m]}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <HoldingsTable holdings={filteredHoldings} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap:              14 }}>
+                <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 16 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: C.text3, marginBottom: 14 }}>市场分布</div>
+                  <MarketPie holdings={filteredHoldings} />
+                </div>
+                <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 16 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: C.text3, marginBottom: 14 }}>季度异动 Top 8</div>
+                  <ChangesBar changes={holdingChanges} />
+                </div>
+              </div>
             </div>
           </div>
+        )}
 
-          {/* Market filter */}
-          <div className="card p-4 space-y-3">
-            <div className="text-xs font-semibold text-text-muted uppercase tracking-wider">
-              市场筛选
-            </div>
-            <div className="flex flex-col gap-1.5">
-              {([
-                ['ALL', '全部市场'],
-                ['US', '🇺🇸 美股'],
-                ['HK', '🇭🇰 港股'],
-                ['CN', '🇨🇳 A股'],
-              ] as const).map(([val, label]) => (
+        {/* ══ INSTITUTIONS ══════════════════════════════════════════════════ */}
+        {tab === 'institutions' && (
+          <div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24 }}>
+              <button
+                onClick={() => setInstFilter(null)}
+                style={{
+                  padding: '5px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600,
+                  background: instFilter === null ? `${C.blue}20` : 'transparent',
+                  border: `1px solid ${instFilter === null ? C.blue + '40' : C.border}`,
+                  color: instFilter === null ? C.blue : C.text3, cursor: 'pointer',
+                }}
+              >
+                全部机构
+              </button>
+              {institutions.map((inst: Institution) => (
                 <button
-                  key={val}
-                  onClick={() => setSelectedMarket(val)}
-                  className={cn(
-                    'flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all',
-                    selectedMarket === val
-                      ? 'bg-accent-blue/10 text-accent-blue border border-accent-blue/30'
-                      : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover border border-transparent'
-                  )}
+                  key={inst.id}
+                  onClick={() => setInstFilter(inst.id)}
+                  style={{
+                    padding: '5px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600,
+                    background: instFilter === inst.id ? `${inst.color}20` : 'transparent',
+                    border: `1px solid ${instFilter === inst.id ? inst.color + '50' : C.border}`,
+                    color: instFilter === inst.id ? inst.color : C.text3, cursor: 'pointer',
+                  }}
                 >
-                  {label}
+                  {inst.name}
                 </button>
               ))}
             </div>
-          </div>
 
-          {/* Alert toggle */}
-          <button
-            onClick={() => setShowOnlyAlerts(v => !v)}
-            className={cn(
-              'card p-4 w-full flex items-center gap-2 text-sm transition-all',
-              showOnlyAlerts
-                ? 'border-accent-yellow/40 bg-accent-yellow/5 text-accent-yellow'
-                : 'hover:bg-bg-hover'
-            )}
-          >
-            <AlertTriangle className="w-4 h-4" />
-            仅显示大幅变动（≥20%）
-            <div className={cn('w-8 h-4 rounded-full transition-colors ml-auto', showOnlyAlerts ? 'bg-accent-yellow' : 'bg-bg-secondary')} />
-          </button>
-        </aside>
-
-        {/* Main content */}
-        <main className="flex-1 space-y-5 min-w-0">
-          {/* Tab nav */}
-          <div className="flex items-center gap-1 bg-bg-secondary rounded-lg p-1 w-fit">
-            {([
-              ['overview', '总览'],
-              ['holdings', '持仓明细'],
-              ['alerts', '预警记录'],
-            ] as const).map(([tab, label]) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={cn(
-                  'px-4 py-2 rounded-md text-sm font-medium transition-all',
-                  activeTab === tab
-                    ? 'bg-bg-card text-text-primary shadow-card'
-                    : 'text-text-muted hover:text-text-primary'
-                )}
-              >
-                {label}
-                {tab === 'alerts' && <span className="ml-1.5 badge badge-gain text-xs">{ALERT_LOGS.length}</span>}
-              </button>
-            ))}
-          </div>
-
-          {/* === Overview Tab === */}
-          {activeTab === 'overview' && (
-            <div className="space-y-5">
-              {/* Search + count bar */}
-              <div className="flex items-center gap-4">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                  <input
-                    type="text"
-                    placeholder="搜索股票代码或名称..."
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                    className="search-input pl-9"
-                  />
-                </div>
-                <div className="text-sm text-text-muted font-mono shrink-0">
-                  {filteredHoldings.length} 条持仓记录
-                </div>
-              </div>
-
-              {/* Market allocation + Top changes */}
-              <div className="grid grid-cols-2 gap-5">
-                <div className="card">
-                  <div className="card-header flex items-center justify-between">
-                    <h3 className="text-sm font-semibold">市场分布</h3>
-                    <span className="text-xs text-text-muted">按持仓市值</span>
+            {selectedInst ? (
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
+                  <div style={{
+                    width: 52, height: 52, borderRadius: 14,
+                    background: `${selectedInst.color}20`,
+                    border: `2px solid ${selectedInst.color}40`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 22, fontWeight: 800, color: selectedInst.color,
+                    fontFamily: 'JetBrains Mono, monospace',
+                  }}>
+                    {selectedInst.name[0]}
                   </div>
-                  <div className="card-body">
-                    <MarketAllocationChart holdings={filteredHoldings} />
-                  </div>
-                </div>
-                <div className="card">
-                  <div className="card-header flex items-center justify-between">
-                    <h3 className="text-sm font-semibold">季度增持 / 减持排行</h3>
-                    <span className="text-xs text-text-muted">Top 6 变化</span>
-                  </div>
-                  <div className="card-body">
-                    <TopChangesChart holdings={filteredHoldings} />
-                  </div>
-                </div>
-              </div>
-
-              {/* Featured holdings preview */}
-              <div className="card">
-                <div className="card-header flex items-center justify-between">
-                  <h3 className="text-sm font-semibold">
-                    {institutionName ? `${institutionName} · 持仓明细` : '全部持仓明细'}
-                  </h3>
-                  <div className="flex items-center gap-2">
-                    {institutionName && (
-                      <span className="badge badge-institution">{institutionName}</span>
-                    )}
-                    <span className="text-xs text-text-muted font-mono">{filteredHoldings.length} 只股票</span>
-                  </div>
-                </div>
-                <div className="card-body p-0">
-                  <HoldingsTable holdings={filteredHoldings} institutionName={institutionName} />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* === Holdings Tab === */}
-          {activeTab === 'holdings' && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-4">
-                <div className="relative flex-1 max-w-sm">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                  <input
-                    type="text"
-                    placeholder="搜索股票代码或名称..."
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                    className="search-input pl-9"
-                  />
-                </div>
-                <div className="text-sm text-text-muted font-mono">
-                  {filteredHoldings.length} 条记录
-                </div>
-              </div>
-              <div className="card p-0">
-                <HoldingsTable holdings={filteredHoldings} institutionName={institutionName} />
-              </div>
-            </div>
-          )}
-
-          {/* === Alerts Tab === */}
-          {activeTab === 'alerts' && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="card flex-1 p-4 flex items-center gap-3">
-                  <AlertTriangle className="w-5 h-5 text-accent-yellow" />
                   <div>
-                    <div className="text-sm font-semibold">已触发预警</div>
-                    <div className="text-xs text-text-muted">季度持仓大幅变动监控</div>
+                    <div style={{ fontSize: 20, fontWeight: 700, color: C.text }}>{selectedInst.name}</div>
+                    <div style={{ fontSize: 12, color: C.text3 }}>{selectedInst.nameEn} · {selectedInst.country} · {typeLabels[selectedInst.type]}</div>
                   </div>
-                  <span className="badge badge-gain text-sm ml-auto font-mono">{ALERT_LOGS.length}</span>
+                  <button onClick={() => setInstFilter(null)} style={{
+                    marginLeft: 'auto', padding: '7px 16px', borderRadius: 8,
+                    background: 'transparent', border: `1px solid ${C.border}`,
+                    color: C.text3, fontSize: 12, cursor: 'pointer',
+                  }}>
+                    ← 返回全部
+                  </button>
+                </div>
+                <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, overflow: 'hidden' }}>
+                  <HoldingsTable holdings={holdings.filter((h: Holding) => h.institutionId === selectedInst.id)} />
                 </div>
               </div>
-              <div className="space-y-3">
-                {ALERT_LOGS.map(log => (
-                  <AlertLogRow key={log.id} log={log} />
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
+                {institutions.map((inst: Institution) => (
+                  <InstitutionCard
+                    key={inst.id}
+                    inst={inst}
+                    holdings={holdings}
+                    onClick={() => setInstFilter(inst.id)}
+                  />
                 ))}
               </div>
-              {ALERT_LOGS.length === 0 && (
-                <div className="card p-12 text-center">
-                  <CheckCircle2 className="w-12 h-12 mx-auto text-gain/30 mb-3" />
-                  <div className="text-text-muted">暂无预警记录</div>
-                </div>
-              )}
+            )}
+          </div>
+        )}
+
+        {/* ══ SEARCH ══════════════════════════════════════════════════════ */}
+        {tab === 'search' && (
+          <div>
+            <div style={{ marginBottom: 24 }}>
+              <h2 style={{ fontSize: 20, fontWeight: 700, color: C.text, margin: '0 0 6px' }}>持仓搜索</h2>
+              <p style={{ fontSize: 12, color: C.text3, margin: 0 }}>输入股票代码或名称，查看哪些机构持有</p>
             </div>
-          )}
-        </main>
-      </div>
+            <div style={{ position: 'relative', maxWidth: 560, marginBottom: 20 }}>
+              <Search size={16} color={C.text3} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)' }} />
+              <input
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="搜索股票代码或名称，如：AAPL、微软、腾讯..."
+                style={{
+                  width: '100%', padding: '12px 14px 12px 42px', borderRadius: 10,
+                  background: C.card, border: `1px solid ${C.border}`,
+                  color: C.text, fontSize: 14, boxSizing: 'border-box', outline: 'none',
+                }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 28 }}>
+              {['AAPL', 'MSFT', 'NVDA', 'TSLA', 'META', 'GOOGL', 'AMZN', 'JPM', 'BRK.B', '0700.HK'].map(s => (
+                <button
+                  key={s}
+                  onClick={() => setSearchQuery(s)}
+                  style={{
+                    padding: '5px 14px', borderRadius: 8, fontSize: 12, fontWeight: 700,
+                    fontFamily: 'JetBrains Mono, monospace',
+                    background: searchQuery === s ? `${C.blue}20` : 'transparent',
+                    border: `1px solid ${searchQuery === s ? C.blue + '40' : C.border}`,
+                    color: searchQuery === s ? C.blue : C.text2, cursor: 'pointer',
+                  }}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+            {searchQuery && filteredHoldings.length > 0 && (
+              <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, overflow: 'hidden' }}>
+                <div style={{ padding: '14px 20px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <span style={{ fontSize: 18, fontWeight: 800, fontFamily: 'JetBrains Mono, monospace', color: C.blue }}>
+                    {searchQuery.toUpperCase()}
+                  </span>
+                  <span style={{ fontSize: 13, color: C.text3 }}>
+                    被 {filteredHoldings.length} 家机构持有
+                  </span>
+                </div>
+                <HoldingsTable holdings={filteredHoldings} />
+              </div>
+            )}
+            {searchQuery && filteredHoldings.length === 0 && (
+              <div style={{ textAlign: 'center', padding: '60px 0', color: C.text3 }}>
+                <Search size={32} style={{ opacity: 0.3, marginBottom: 12, margin: '0 auto 12px' }} />
+                <div style={{ fontSize: 14 }}>未找到相关持仓</div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ══ CHANGES ══════════════════════════════════════════════════════ */}
+        {tab === 'changes' && (
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {[
+                  { k: 'all' as const, l: '全部' },
+                  { k: 'increase' as const, l: '↑ 增持' },
+                  { k: 'decrease' as const, l: '↓ 减持' },
+                  { k: 'new' as const, l: '✨ 新建仓' },
+                  { k: 'exited' as const, l: '✕ 清仓' },
+                ].map(({ k, l }) => (
+                  <button key={k} onClick={() => setChangeType(k)} style={{
+                    padding: '5px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600,
+                    background: changeType === k ? `${C.blue}20` : 'transparent',
+                    border: `1px solid ${changeType === k ? C.blue + '40' : C.border}`,
+                    color: changeType === k ? C.blue : C.text3, cursor: 'pointer',
+                  }}>
+                    {l}
+                  </button>
+                ))}
+              </div>
+              <div style={{ marginLeft: 'auto', fontSize: 12, color: C.text3, fontFamily: 'JetBrains Mono, monospace' }}>
+                {filteredChanges.length} 条异动
+              </div>
+            </div>
+            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, overflow: 'hidden', marginBottom: 20 }}>
+              <ChangesTable changes={filteredChanges} />
+            </div>
+            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 20 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: C.text, marginBottom: 16 }}>异动幅度可视化</div>
+              <ChangesBar changes={filteredChanges} />
+            </div>
+          </div>
+        )}
+
+        {/* ══ ALERTS ═══════════════════════════════════════════════════════ */}
+        {tab === 'alerts' && (
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+              <div>
+                <h2 style={{ fontSize: 20, fontWeight: 700, color: C.text, margin: '0 0 4px' }}>预警规则</h2>
+                <p style={{ fontSize: 12, color: C.text3, margin: 0 }}>当机构持仓变化超过阈值时，自动发送通知</p>
+              </div>
+              <button
+                onClick={() => setShowRuleForm(v => !v)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  padding: '8px 16px', borderRadius: 8,
+                  background: `${C.blue}18`, border: `1px solid ${C.blue}40`,
+                  color: C.blue, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                }}
+              >
+                <Plus size={14} /> 新建规则
+              </button>
+            </div>
+
+            {showRuleForm && (
+              <div style={{
+                background: C.card, border: `1px solid ${C.blue}40`,
+                borderRadius: 12, padding: 24, marginBottom: 20,
+              }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                  <div>
+                    <label style={{ fontSize: 12, color: C.text3, display: 'block', marginBottom: 6 }}>股票代码</label>
+                    <input
+                      value={ruleForm.ticker}
+                      onChange={e => setRuleForm(f => ({ ...f, ticker: e.target.value }))}
+                      placeholder="如：AAPL MSFT NVDA"
+                      style={{
+                        width: '100%', padding: '10px 12px', borderRadius: 8,
+                        background: '#0d0d0d', border: `1px solid ${C.border}`,
+                        color: C.text, fontSize: 13, fontFamily: 'JetBrains Mono, monospace', boxSizing: 'border-box',
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 12, color: C.text3, display: 'block', marginBottom: 6 }}>触发阈值（%）</label>
+                    <input
+                      type="number"
+                      value={ruleForm.threshold}
+                      onChange={e => setRuleForm(f => ({ ...f, threshold: Number(e.target.value) }))}
+                      style={{
+                        width: '100%', padding: '10px 12px', borderRadius: 8,
+                        background: '#0d0d0d', border: `1px solid ${C.border}`,
+                        color: C.text, fontSize: 13, boxSizing: 'border-box',
+                      }}
+                    />
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 20, marginTop: 16, alignItems: 'center' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                    <input type="checkbox" checked={ruleForm.email} onChange={e => setRuleForm(f => ({ ...f, email: e.target.checked }))} style={{ accentColor: C.blue }} />
+                    <span style={{ fontSize: 13, color: C.text2 }}>📧 邮件通知</span>
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                    <input type="checkbox" checked={ruleForm.feishu} onChange={e => setRuleForm(f => ({ ...f, feishu: e.target.checked }))} style={{ accentColor: C.blue }} />
+                    <span style={{ fontSize: 13, color: C.text2 }}>📨 飞书推送</span>
+                  </label>
+                </div>
+                <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
+                  <button onClick={addRule} style={{
+                    padding: '8px 20px', borderRadius: 8, background: C.blue, border: 'none',
+                    color: '#000', fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                  }}>
+                    保存规则
+                  </button>
+                  <button onClick={() => setShowRuleForm(false)} style={{
+                    padding: '8px 20px', borderRadius: 8,
+                    background: 'transparent', border: `1px solid ${C.border}`,
+                    color: C.text2, fontSize: 13, cursor: 'pointer',
+                  }}>
+                    取消
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {rules.map((rule: AlertRule) => (
+                <div key={rule.id} style={{
+                  background: C.card, border: `1px solid ${rule.isActive ? C.blue + '33' : C.border}`,
+                  borderRadius: 10, padding: '14px 18px',
+                  display: 'flex', alignItems: 'center', gap: 14,
+                }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                      <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'JetBrains Mono, monospace', color: C.blue }}>
+                        {rule.stockTicker}
+                      </span>
+                      <span style={{ fontSize: 11, color: C.text3 }}>变化 ≥ {rule.thresholdPercent}%</span>
+                      {rule.notifyFeishu && <span style={{ fontSize: 11 }}>📨</span>}
+                      {rule.notifyEmail && <span style={{ fontSize: 11 }}>📧</span>}
+                    </div>
+                    <div style={{ fontSize: 11, color: C.text3 }}>创建于 {rule.createdAt}</div>
+                  </div>
+                  <Toggle value={rule.isActive} onChange={() => setRules(prev => prev.map((r: AlertRule) => r.id === rule.id ? { ...r, isActive: !r.isActive } : r))} />
+                  <button onClick={() => setRules(prev => prev.filter((r: AlertRule) => r.id !== rule.id))} style={{
+                    background: 'transparent', border: 'none', cursor: 'pointer', color: C.text3, padding: 4,
+                  }}>
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ══ SETTINGS ═══════════════════════════════════════════════════════ */}
+        {tab === 'settings' && (
+          <div style={{ maxWidth: 680 }}>
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: C.text, margin: '0 0 24px' }}>设置</h2>
+
+            {[
+              { title: '飞书 Webhook', desc: '预警消息推送地址', value: 'https://open.feishu.cn/open-apis/bot/v2/hook/acb1705d-***', badge: '已配置', badgeColor: C.green },
+              { title: '邮件通知', desc: '接收预警邮件的邮箱地址', value: 'kevin@***.com', badge: '已配置', badgeColor: C.green },
+            ].map(({ title, desc, value, badge, badgeColor }: any) => (
+              <div key={title} style={{
+                background: C.card, border: `1px solid ${C.border}`,
+                borderRadius: 12, padding: 18, marginBottom: 14,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{title}</span>
+                  <span style={{
+                    fontSize: 11, color: badgeColor,
+                    background: `${badgeColor}18`, padding: '2px 8px', borderRadius: 9999, fontWeight: 600,
+                  }}>
+                    {badge}
+                  </span>
+                </div>
+                <div style={{ fontSize: 12, color: C.text3, marginBottom: 10 }}>{desc}</div>
+                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color: C.text2, background: '#0d0d0d', padding: '8px 12px', borderRadius: 6 }}>
+                  {value}
+                </div>
+              </div>
+            ))}
+
+            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, padding: 18, marginBottom: 14 }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: C.text, marginBottom: 6 }}>数据刷新频率</div>
+              <div style={{ fontSize: 12, color: C.text3, marginBottom: 12 }}>GitHub Actions 自动抓取 SEC EDGAR 13F 披露数据</div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {(['每6小时', '每12小时', '每日'] as const).map((f: string, i: number) => (
+                  <button key={f} style={{
+                    padding: '6px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600,
+                    background: i === 0 ? `${C.blue}20` : 'transparent',
+                    border: `1px solid ${i === 0 ? C.blue + '40' : C.border}`,
+                    color: i === 0 ? C.blue : C.text3, cursor: 'pointer',
+                  }}>
+                    {f}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, padding: 18 }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: C.text, marginBottom: 6 }}>数据来源</div>
+              <div style={{ fontSize: 12, color: C.text3, lineHeight: 1.8 }}>
+                · SEC EDGAR 13F-HR 披露文件（每季度结束后45天内更新）<br />
+                · HKEX 披露易股权变动数据<br />
+                · 东方财富 QFII 持股数据<br />
+                · 数据截止：{stats.lastUpdated}
+              </div>
+              <div style={{ marginTop: 14 }}>
+                <a href="https://github.com/Roloria/smart-money-tracker" target="_blank" rel="noopener" style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  fontSize: 12, color: C.blue, textDecoration: 'none',
+                }}>
+                  <ExternalLink size={12} /> GitHub 仓库
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
     </div>
   )
 }

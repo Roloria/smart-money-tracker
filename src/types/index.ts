@@ -1,6 +1,6 @@
 export interface Institution {
   id: number;
-  name: string;
+  name: string;        // 中文名
   nameEn: string;
   type: 'hedge' | 'sovereign' | 'asset_manager' | 'bank';
   country: string;
@@ -21,6 +21,7 @@ export interface Holding {
   quarter: string;
   changeShares: number;
   changePercent: number;
+  market?: 'US' | 'HK' | 'CN';
 }
 
 export interface AlertRule {
