@@ -1,0 +1,34 @@
+name: Scrape 13F Holdings
+
+on:
+  schedule:
+    # Every 6 hours
+    - cron: '0 */6 * * *'
+  workflow_dispatch:   # Manual trigger
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests lxml
+
+      - name: Run 13F Scraper
+        run: python scripts/sec_13f_scraper.py
+        env:
+          SEC_API_KEY: ${{ secrets.SEC_API_KEY }}
+
+      - name: Commit & push data
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add data/
+          git diff --quiet && echo "No changes" || git commit -m "chore: update holdings data $(date -u '+%Y-%m-%d')"
+          git push
