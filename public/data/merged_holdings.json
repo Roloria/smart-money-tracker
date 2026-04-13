@@ -1,0 +1,13 @@
+{
+  "meta": {
+    "lastUpdated": "2026-04-13T12:00:00Z",
+    "totalHoldings": 62,
+    "usHoldings": 45,
+    "hkHoldings": 7,
+    "cnHoldings": 10,
+    "dataSources": ["SEC_EDGAR_MOCK", "HKEX_MOCK", "EASTMONEY_QFII_MOCK"],
+    "quarter": "2025Q4"
+  },
+  "holdings": [],
+  "changes": []
+}

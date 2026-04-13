@@ -13,7 +13,16 @@ import {
 import {
   institutions, holdings, holdingChanges, alertRules
 } from '../data/mockData'
+import {
+  getHoldings, getHoldingChanges,
+  getIsLiveData, getLastUpdated, getDataSourceLabel,
+  extendedMockHoldings, extendedHoldingChanges,
+} from '../data/realData'
 import type { Institution, Holding, AlertRule, HoldingChange } from '../types'
+
+// Use extended data with HK + CN holdings
+const ALL_HOLDINGS: Holding[] = [...holdings, ...extendedMockHoldings]
+const ALL_CHANGES: HoldingChange[] = [...holdingChanges, ...extendedHoldingChanges]
 
 // ── Design Tokens ──────────────────────────────────────────────────────────────
 const C = {
@@ -414,23 +423,28 @@ export default function SmartMoney() {
   const [showRuleForm, setShowRuleForm] = useState(false)
   const [ruleForm, setRuleForm] = useState({ ticker: '', threshold: 20, email: true, feishu: false })
 
+  // ── Data status ─────────────────────────────────────────────────────────────
+  const isLiveData = getIsLiveData()
+  const lastUpdatedLabel = getLastUpdated()
+  const dataSourceLabel = getDataSourceLabel()
+
   // Compute stats
   const stats = useMemo(() => {
-    const totalValue = holdings.reduce((s: number, h: Holding) => s + h.marketValue, 0)
-    const topGainer = [...holdings].sort((a: Holding, b: Holding) => b.changePercent - a.changePercent)[0]
-    const topLoser = [...holdings].sort((a: Holding, b: Holding) => a.changePercent - b.changePercent)[0]
+    const totalValue = ALL_HOLDINGS.reduce((s: number, h: Holding) => s + h.marketValue, 0)
+    const topGainer = [...ALL_HOLDINGS].sort((a: Holding, b: Holding) => b.changePercent - a.changePercent)[0]
+    const topLoser = [...ALL_HOLDINGS].sort((a: Holding, b: Holding) => a.changePercent - b.changePercent)[0]
     const inst = topGainer ? institutions.find((x: Institution) => x.id === topGainer.institutionId) : null
     const loserInst = topLoser ? institutions.find((x: Institution) => x.id === topLoser.institutionId) : null
     return {
       totalValue,
       topGainer: { ticker: topGainer?.stockTicker || '', institution: inst?.name || '', change: topGainer?.changePercent || 0 },
       topLoser: { ticker: topLoser?.stockTicker || '', institution: loserInst?.name || '', change: topLoser?.changePercent || 0 },
-      lastUpdated: '2025 Q4',
+      lastUpdated: lastUpdatedLabel || '2025 Q4',
     }
-  }, [])
+  }, [lastUpdatedLabel])
 
   const filteredHoldings = useMemo(() => {
-    let list = holdings as Holding[]
+    let list = ALL_HOLDINGS
     if (instFilter !== null) list = list.filter((h: Holding) => h.institutionId === instFilter)
     if (marketFilter !== 'ALL') list = list.filter((h: Holding) => h.market === marketFilter)
     if (searchQuery.trim()) {
@@ -442,7 +456,7 @@ export default function SmartMoney() {
   }, [instFilter, marketFilter, searchQuery, alertOnly])
 
   const filteredChanges = useMemo(() => {
-    let list = holdingChanges as HoldingChange[]
+    let list = ALL_CHANGES
     if (changeType !== 'all') list = list.filter((c: HoldingChange) => c.changeType === changeType)
     if (instFilter !== null) list = list.filter((c: HoldingChange) => c.institutionId === instFilter)
     return [...list].sort((a: HoldingChange, b: HoldingChange) => Math.abs(b.changePercent) - Math.abs(a.changePercent))
@@ -497,11 +511,22 @@ export default function SmartMoney() {
             <div style={{
               display: 'flex', alignItems: 'center', gap: 5,
               padding: '4px 10px', borderRadius: 9999,
-              background: `${C.green}12`, border: `1px solid ${C.green}30`,
-              fontSize: 11, color: C.green,
+              background: isLiveData ? `${C.green}12` : `${C.yellow}12`,
+              border: `1px solid ${isLiveData ? C.green + '30' : C.yellow + '30'}`,
+              fontSize: 11, color: isLiveData ? C.green : C.yellow,
             }}>
               <CheckCircle2 size={11} />
               {stats.lastUpdated}
+            </div>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 5,
+              padding: '4px 10px', borderRadius: 9999,
+              background: isLiveData ? `${C.blue}12` : `${C.text3}12`,
+              border: `1px solid ${isLiveData ? C.blue + '30' : C.text3 + '30'}`,
+              fontSize: 11, color: isLiveData ? C.blue : C.text3,
+            }}>
+              <Globe size={11} />
+              {dataSourceLabel}
             </div>
           </div>
         </div>
@@ -582,7 +607,7 @@ export default function SmartMoney() {
                 </div>
                 <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 16 }}>
                   <div style={{ fontSize: 12, fontWeight: 600, color: C.text3, marginBottom: 14 }}>季度异动 Top 8</div>
-                  <ChangesBar changes={holdingChanges} />
+                  <ChangesBar changes={filteredChanges} />
                 </div>
               </div>
             </div>
@@ -655,7 +680,7 @@ export default function SmartMoney() {
                   <InstitutionCard
                     key={inst.id}
                     inst={inst}
-                    holdings={holdings}
+                    holdings={ALL_HOLDINGS}
                     onClick={() => setInstFilter(inst.id)}
                   />
                 ))}
@@ -685,7 +710,7 @@ export default function SmartMoney() {
               />
             </div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 28 }}>
-              {['AAPL', 'MSFT', 'NVDA', 'TSLA', 'META', 'GOOGL', 'AMZN', 'JPM', 'BRK.B', '0700.HK'].map(s => (
+              {['AAPL', 'MSFT', 'NVDA', 'TSLA', 'META', 'GOOGL', 'AMZN', 'JPM', 'BRK.B', '0700.HK', '600519.SH', '601318.SH'].map(s => (
                 <button
                   key={s}
                   onClick={() => setSearchQuery(s)}

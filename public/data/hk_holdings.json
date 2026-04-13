@@ -1,0 +1,9 @@
+[
+  {"ticker":"0700.HK","stockName":"腾讯控股","institution":"Abu Dhabi IA","institutionCn":"阿布扎比投资局","shares":120000000,"marketValue":5280000000,"ownershipPercent":1.3,"market":"HK","quarter":"2025Q4"},
+  {"ticker":"9988.HK","stockName":"阿里巴巴","institution":"Abu Dhabi IA","institutionCn":"阿布扎比投资局","shares":85000000,"marketValue":7480000000,"ownershipPercent":3.8,"market":"HK","quarter":"2025Q4"},
+  {"ticker":"9618.HK","stockName":"京东集团","institution":"Abu Dhabi IA","institutionCn":"阿布扎比投资局","shares":45000000,"marketValue":5400000000,"ownershipPercent":2.9,"market":"HK","quarter":"2025Q4"},
+  {"ticker":"3690.HK","stockName":"美团","institution":"Abu Dhabi IA","institutionCn":"阿布扎比投资局","shares":38000000,"marketValue":4180000000,"ownershipPercent":2.1,"market":"HK","quarter":"2025Q4"},
+  {"ticker":"0700.HK","stockName":"腾讯控股","institution":"Kuwait IA","institutionCn":"科威特投资局","shares":95000000,"marketValue":4180000000,"ownershipPercent":1.0,"market":"HK","quarter":"2025Q4"},
+  {"ticker":"9988.HK","stockName":"阿里巴巴","institution":"Kuwait IA","institutionCn":"科威特投资局","shares":62000000,"marketValue":5456000000,"ownershipPercent":2.8,"market":"HK","quarter":"2025Q4"},
+  {"ticker":"1810.HK","stockName":"小米集团","institution":"Kuwait IA","institutionCn":"科威特投资局","shares":180000000,"marketValue":2700000000,"ownershipPercent":5.2,"market":"HK","quarter":"2025Q4"}
+]

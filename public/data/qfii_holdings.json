@@ -1,0 +1,9 @@
+[
+  {"ticker":"600519.SH","tickerRaw":"600519","stockName":"贵州茅台","institution":"Goldman Sachs","institutionCn":"高盛","shares":4200000,"marketValue":7140000000,"ownershipPercent":3.35,"quarter":"2025Q4","market":"CN"},
+  {"ticker":"600036.SH","tickerRaw":"600036","stockName":"招商银行","institution":"Goldman Sachs","institutionCn":"高盛","shares":8500000,"marketValue":3825000000,"ownershipPercent":4.12,"quarter":"2025Q4","market":"CN"},
+  {"ticker":"000858.SZ","tickerRaw":"000858","stockName":"五粮液","institution":"Goldman Sachs","institutionCn":"高盛","shares":3200000,"marketValue":2880000000,"ownershipPercent":2.81,"quarter":"2025Q4","market":"CN"},
+  {"ticker":"601318.SH","tickerRaw":"601318","stockName":"中国平安","institution":"JPMorgan Chase","institutionCn":"摩根大通","shares":12800000,"marketValue":8960000000,"ownershipPercent":6.24,"quarter":"2025Q4","market":"CN"},
+  {"ticker":"600030.SH","tickerRaw":"600030","stockName":"中信证券","institution":"JPMorgan Chase","institutionCn":"摩根大通","shares":9500000,"marketValue":4370000000,"ownershipPercent":5.67,"quarter":"2025Q4","market":"CN"},
+  {"ticker":"000333.SZ","tickerRaw":"000333","stockName":"美的集团","institution":"JPMorgan Chase","institutionCn":"摩根大通","shares":6800000,"marketValue":5984000000,"ownershipPercent":4.89,"quarter":"2025Q4","market":"CN"},
+  {"ticker":"002415.SZ","tickerRaw":"002415","stockName":"海康威视","institution":"JPMorgan Chase","institutionCn":"摩根大通","shares":4500000,"marketValue":2295000000,"ownershipPercent":3.12,"quarter":"2025Q4","market":"CN"}
+]

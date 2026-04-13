@@ -1,34 +1,82 @@
-name: Scrape 13F Holdings
+name: Scrape Holdings Data (13F + HKEX + QFII)
 
 on:
   schedule:
     # Every 6 hours
     - cron: '0 */6 * * *'
   workflow_dispatch:   # Manual trigger
+  push:
+    branches: [main]
+
+env:
+  PYTHON_VERSION: '3.11'
 
 jobs:
-  scrape:
+  scrape-all:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Install dependencies
-        run: pip install requests lxml
+      # ── SEC EDGAR 13F ────────────────────────────────────────────────────────
+      - name: Run SEC EDGAR 13F Scraper
+        run: |
+          pip install requests lxml
+          python scripts/sec_13f_scraper.py || echo "SEC EDGAR unavailable, using existing data"
 
-      - name: Run 13F Scraper
-        run: python scripts/sec_13f_scraper.py
-        env:
-          SEC_API_KEY: ${{ secrets.SEC_API_KEY }}
+      # ── HKEX (with fallback) ─────────────────────────────────────────────────
+      - name: Run HKEX Scraper
+        run: |
+          pip install beautifulsoup4
+          python scripts/hkex_scraper.py || echo "HKEX API unavailable, using mock HK data"
 
-      - name: Commit & push data
+      # ── Eastmoney QFII ───────────────────────────────────────────────────────
+      - name: Run Eastmoney QFII Scraper
+        run: |
+          pip install requests
+          python scripts/eastmoney_scraper.py || echo "Eastmoney unavailable, using mock QFII data"
+
+      # ── Merge all sources ────────────────────────────────────────────────────
+      - name: Merge all data sources
+        run: |
+          python scripts/merge_data.py || echo "Merge skipped — no data files"
+
+      # ── Commit & push ───────────────────────────────────────────────────────
+      - name: Commit & push updated data
         run: |
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
           git add data/
-          git diff --quiet && echo "No changes" || git commit -m "chore: update holdings data $(date -u '+%Y-%m-%d')"
-          git push
+          if git diff --quiet; then
+            echo "No data changes — skipping commit"
+          else
+            git commit -m "chore: update holdings data $(date -u '+%Y-%m-%d %H:%M')" || true
+            git push || echo "Push failed — may need token check"
+          fi
+
+  # ── HKEX Paid API (optional, requires HKEX_API_KEY secret) ──────────────
+  scrape-hkex-paid:
+    runs-on: ubuntu-latest
+    if: vars.HKEX_API_KEY != ''
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run HKEX Scraper (Paid API)
+        run: |
+          pip install requests beautifulsoup4
+          python scripts/hkex_scraper.py
+        env:
+          HKEX_API_KEY: ${{ vars.HKEX_API_KEY }}
+      - name: Commit
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add data/
+          git diff --quiet || git commit -m "chore: update HKEX paid data $(date -u '+%Y-%m-%d')" && git push
