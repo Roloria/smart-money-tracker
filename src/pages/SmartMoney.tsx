@@ -14,15 +14,15 @@ import {
   institutions, holdings, holdingChanges, alertRules
 } from '../data/mockData'
 import {
-  getHoldings, getHoldingChanges,
-  getIsLiveData, getLastUpdated, getDataSourceLabel,
-  extendedMockHoldings, extendedHoldingChanges,
+  getAllHoldings, getAllChanges, getMeta,
+  getDataSourceLabel, getLastUpdated,
 } from '../data/realData'
 import type { Institution, Holding, AlertRule, HoldingChange } from '../types'
 
-// Use extended data with HK + CN holdings
-const ALL_HOLDINGS: Holding[] = [...holdings, ...extendedMockHoldings]
-const ALL_CHANGES: HoldingChange[] = [...holdingChanges, ...extendedHoldingChanges]
+// Use combined data: mock (US) + HK/CN from realData
+const ALL_HOLDINGS = getAllHoldings()
+const ALL_CHANGES = getAllChanges()
+const DATA_META = getMeta()
 
 // ── Design Tokens ──────────────────────────────────────────────────────────────
 const C = {
@@ -124,6 +124,26 @@ function StatCard({ icon: Icon, label, value, sub, color }: {
 }
 
 // ── Holdings Table ────────────────────────────────────────────────────────────
+function DataSourceBadge({ source }: { source?: string }) {
+  const sourceMap: Record<string, { label: string; color: string }> = {
+    SEC_EDGAR_MOCK: { label: 'SEC 13F', color: C.blue },
+    HKEX_MOCK: { label: '港交所', color: C.yellow },
+    EASTMONEY_QFII_MOCK: { label: 'QFII', color: C.green },
+    MOCK: { label: '模拟', color: C.text3 },
+  }
+  const info = sourceMap[source || 'MOCK'] || sourceMap['MOCK']
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center',
+      padding: '1px 6px', borderRadius: 4, fontSize: 10,
+      fontWeight: 600, background: `${info.color}18`,
+      color: info.color, border: `1px solid ${info.color}30`,
+    }}>
+      {info.label}
+    </span>
+  )
+}
+
 function HoldingsTable({ holdings, onTickerClick }: {
   holdings: Holding[]; onTickerClick?: (t: string) => void
 }) {
@@ -145,6 +165,7 @@ function HoldingsTable({ holdings, onTickerClick }: {
               { k: 'shares' as const, l: '持股数量' },
               { k: null, l: '占比' },
               { k: 'change' as const, l: '季度变化' },
+              { k: null, l: '来源' },
             ].map(({ k, l }) => (
               <th key={l} onClick={() => k && setSort(k)} style={{
                 padding: '10px 12px', textAlign: 'left',
@@ -162,13 +183,19 @@ function HoldingsTable({ holdings, onTickerClick }: {
               style={{ borderBottom: `1px solid ${C.border}`, transition: 'background 0.1s' }}
             >
               <td style={{ padding: '12px', minWidth: 140 }}>
-                <span
-                  onClick={() => onTickerClick?.(h.stockTicker)}
-                  style={{ fontSize: 13, fontWeight: 700, fontFamily: 'JetBrains Mono, monospace', color: C.blue, cursor: 'pointer' }}
-                >
-                  {h.stockTicker}
-                </span>
-                <div style={{ fontSize: 11, color: C.text3, marginTop: 2 }}>{h.stockName}</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span
+                      onClick={() => onTickerClick?.(h.stockTicker)}
+                      style={{ fontSize: 13, fontWeight: 700, fontFamily: 'JetBrains Mono, monospace', color: C.blue, cursor: 'pointer' }}
+                    >
+                      {h.stockTicker}
+                    </span>
+                    {h.market === 'HK' && <span style={{ fontSize: 10, color: C.yellow, fontWeight: 600 }}>🇭🇰</span>}
+                    {h.market === 'CN' && <span style={{ fontSize: 10, color: C.red, fontWeight: 600 }}>🇨🇳</span>}
+                  </div>
+                  <span style={{ fontSize: 11, color: C.text3 }}>{h.stockName}</span>
+                </div>
               </td>
               <td style={{ padding: '12px', fontFamily: 'JetBrains Mono, monospace', fontSize: 13, fontWeight: 600 }}>
                 {fmt$(h.marketValue)}
@@ -181,6 +208,9 @@ function HoldingsTable({ holdings, onTickerClick }: {
               </td>
               <td style={{ padding: '12px' }}>
                 <Pill value={h.changePercent} />
+              </td>
+              <td style={{ padding: '12px' }}>
+                <DataSourceBadge source={(h as any).dataSource} />
               </td>
             </tr>
           ))}
@@ -424,7 +454,7 @@ export default function SmartMoney() {
   const [ruleForm, setRuleForm] = useState({ ticker: '', threshold: 20, email: true, feishu: false })
 
   // ── Data status ─────────────────────────────────────────────────────────────
-  const isLiveData = getIsLiveData()
+  const isLiveData = false
   const lastUpdatedLabel = getLastUpdated()
   const dataSourceLabel = getDataSourceLabel()
 
@@ -671,7 +701,7 @@ export default function SmartMoney() {
                   </button>
                 </div>
                 <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, overflow: 'hidden' }}>
-                  <HoldingsTable holdings={holdings.filter((h: Holding) => h.institutionId === selectedInst.id)} />
+                  <HoldingsTable holdings={ALL_HOLDINGS.filter((h: Holding) => h.institutionId === selectedInst.id)} />
                 </div>
               </div>
             ) : (
