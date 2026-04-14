@@ -3,7 +3,7 @@ import {
   BarChart3, Building2, TrendingUp, TrendingDown,
   Search, Bell, Settings, ChevronRight,
   AlertTriangle, CheckCircle2, Globe, Shield,
-  Plus, Trash2, ExternalLink, PieChart as PieIcon, RefreshCw, DollarSign, Clock, Cpu
+  Plus, Trash2, ExternalLink, PieChart as PieIcon, RefreshCw, DollarSign, Clock, Cpu, Star
 } from 'lucide-react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -472,7 +472,7 @@ function ChangesBar({ changes }: { changes: HoldingChange[] }) {
 }
 
 // ── App ────────────────────────────────────────────────────────────────────────
-type Tab = 'overview' | 'institutions' | 'search' | 'changes' | 'alerts' | 'ai' | 'settings'
+type Tab = 'overview' | 'institutions' | 'search' | 'changes' | 'alerts' | 'settings'
 const NAV: { key: Tab; label: string; icon: any }[] = [
   { key: 'overview', label: '总览', icon: BarChart3 },
   { key: 'institutions', label: '机构', icon: Building2 },
@@ -674,6 +674,91 @@ export default function SmartMoney() {
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            {/* ══ AI 产业链追踪 ══════════════════════════════════════════════════ */}
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <Cpu size={14} color={C.blue} />
+                  <span style={{ fontSize: 14, fontWeight: 700, color: C.text }}>AI 产业链追踪</span>
+                  <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 5, background: `${C.blue}18`, color: C.blue, fontWeight: 700 }}>机构持仓</span>
+                </div>
+                <span style={{ fontSize: 11, color: C.text3, marginLeft: 'auto' }}>鼠标悬停查看详情</span>
+              </div>
+
+              {/* AI Layer Strip */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10, marginBottom: 12 }}>
+                {[
+                  { layer: 'AI芯片/算力', color: '#f59e0b', icon: '🟠', stocks: 'NVDA AMD TSM AMAT', change: '+18.2%', key: 'chip' },
+                  { layer: 'AI云/基础设施', color: '#38bdf8', icon: '🔵', stocks: 'MSFT GOOGL AMZN', change: '+12.4%', key: 'cloud' },
+                  { layer: 'AI应用层', color: '#22c55e', icon: '🟢', stocks: 'SNOW NET DDOG', change: '+24.6%', key: 'app' },
+                  { layer: 'AI终端/机器人', color: '#a78bfa', icon: '🟣', stocks: 'TSLA HON ISRG', change: '+8.1%', key: 'robot' },
+                  { layer: '中国AI', color: '#f43f5e', icon: '🔴', stocks: '海康 东芯 安克 小米', change: '+15.3%', key: 'china' },
+                ].map(item => (
+                  <div key={item.key} style={{
+                    background: C.card, border: `1px solid ${C.border}`, borderRadius: 10,
+                    padding: '12px 14px', cursor: 'pointer',
+                    transition: 'all 0.15s',
+                  }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = item.color + '50'; e.currentTarget.style.background = item.color + '08'; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.background = C.card; }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                      <span style={{ fontSize: 14 }}>{item.icon}</span>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: item.color }}>{item.layer}</span>
+                    </div>
+                    <div style={{ fontSize: 10, color: C.text3, marginBottom: 6, fontFamily: 'JetBrains Mono, monospace' }}>{item.stocks}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: C.green, fontFamily: 'JetBrains Mono, monospace' }}>{item.change}</span>
+                      <span style={{ fontSize: 9, color: C.text3 }}>机构持仓</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* 小盘股建仓信号 */}
+              <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, padding: '14px 18px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                  <Star size={13} color={C.yellow} />
+                  <span style={{ fontSize: 12, fontWeight: 600, color: C.text2 }}>小盘股建仓监测</span>
+                  <span style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
+                    {[
+                      { label: '🆕 新建仓', color: C.red },
+                      { label: '📈 持续买入', color: C.green },
+                      { label: '⚡ Momentum', color: C.yellow },
+                    ].map(b => (
+                      <span key={b.label} style={{ fontSize: 10, padding: '2px 7px', borderRadius: 5, background: `${b.color}15`, color: b.color, fontWeight: 700 }}>{b.label}</span>
+                    ))}
+                  </span>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10 }}>
+                  {[
+                    { ticker: '300866', name: '安克创新', market: 'CN', signal: '📈', signalColor: C.green, change: '+22.1%', inst: '3家机构', note: 'AI智能硬件出海' },
+                    { ticker: '688110', name: '东芯股份', market: 'CN', signal: '🆕', signalColor: C.red, change: '新建仓', inst: '1家机构', note: 'AI存储芯片' },
+                    { ticker: '002415', name: '海康威视', market: 'CN', signal: '📈', signalColor: C.green, change: '+15.8%', inst: '2家机构', note: 'AI安防龙头' },
+                    { ticker: '1810.HK', name: '小米集团', market: 'HK', signal: '📈', signalColor: C.green, change: '+13.7%', inst: '2家机构', note: 'AI+智能硬件' },
+                    { ticker: '6690.HK', name: '海尔智家', market: 'HK', signal: '⚡', signalColor: C.yellow, change: '+3.7%', inst: '1家机构', note: '智能家居' },
+                  ].map(stock => (
+                    <div key={stock.ticker} style={{
+                      background: '#0d0d0d', border: `1px solid ${C.border}`, borderRadius: 8,
+                      padding: '10px 12px', cursor: 'pointer', transition: 'all 0.15s',
+                    }}
+                      onMouseEnter={e => e.currentTarget.style.borderColor = stock.signalColor + '40'}
+                      onMouseLeave={e => e.currentTarget.style.borderColor = C.border}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                        <span style={{ fontSize: 12, fontWeight: 800, color: C.text, fontFamily: 'JetBrains Mono, monospace' }}>{stock.ticker}</span>
+                        <span style={{ fontSize: 13 }}>{stock.signal}</span>
+                      </div>
+                      <div style={{ fontSize: 10, color: C.text3, marginBottom: 2 }}>{stock.name}</div>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: stock.signalColor, fontFamily: 'JetBrains Mono, monospace', marginBottom: 2 }}>{stock.change}</div>
+                      <div style={{ fontSize: 9, color: C.text3 }}>{stock.inst}</div>
+                      <div style={{ fontSize: 9, color: C.text3, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{stock.note}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -1008,7 +1093,6 @@ export default function SmartMoney() {
         )}
 
         {/* ══ SETTINGS ═══════════════════════════════════════════════════════ */}
-        {tab === 'ai' && <AIChainPanel />}
         {tab === 'ai' && <AIChainPanel />}
         {tab === 'settings' && (
           <div style={{ maxWidth: 680 }}>
