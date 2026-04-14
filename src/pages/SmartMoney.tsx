@@ -3,7 +3,7 @@ import {
   BarChart3, Building2, TrendingUp, TrendingDown,
   Search, Bell, Settings, ChevronRight,
   AlertTriangle, CheckCircle2, Globe, Shield,
-  Plus, Trash2, ExternalLink, PieChart as PieIcon, RefreshCw, DollarSign, Clock, Cpu, Star
+  Plus, Trash2, ExternalLink, PieChart as PieIcon, RefreshCw, DollarSign, Clock, Brain, Star
 } from 'lucide-react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -18,6 +18,8 @@ import {
   getAllHoldings, getAllChanges,
   getDataSourceLabel, getLastUpdated, getDataSources, getHoldingDataSource,
 } from '../data/realData'
+import AIFlowPage from './AIFlowPage'
+import SmallCapPage from './SmallCapPage'
 import { getAIChainSummary, getSmallCapSignals, AI_LAYERS } from '../data/aiChain'
 import AIChainPage from './AIChainPage'
 import SmallCapPage from './SmallCapPage'
@@ -1101,6 +1103,8 @@ export default function SmartMoney() {
         {/* ══ SETTINGS ═══════════════════════════════════════════════════════ */}
         {tab === 'ai' && <AIChainPanel />}
         {tab === 'ai' && <AIChainPage />}
+        {tab === 'smallcap' && <SmallCapPage />}
+        {tab === 'ai' && <AIFlowPage />}
         {tab === 'smallcap' && <SmallCapPage />}
         {tab === 'settings' && (
           <div style={{ maxWidth: 680 }}>
