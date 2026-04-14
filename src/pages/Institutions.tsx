@@ -1,8 +1,14 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Globe, Filter } from 'lucide-react';
+import { Globe, Filter, Clock } from 'lucide-react';
 import { institutions, formatNumber, typeLabels, typeColors } from '../data/mockData';
 import { holdings } from '../data/mockData';
+import { getInstitutionSourceInfo } from '../data/realData';
+
+const C = {
+  green: '#22c55e', yellow: '#f59e0b', red: '#ef4444',
+  text3: '#52525b', text2: '#a1a1aa', border: '#1e1e1e',
+};
 
 const filters = ['全部', '对冲基金', '主权基金', '资产管理', '银行'];
 const filterMap: Record<string, string | undefined> = {
@@ -45,10 +51,13 @@ export default function Institutions() {
       {/* Cards Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
         {filtered.map(inst => {
-          const instHoldings = holdings.filter(h => h.institutionId === inst.id);
-          const totalVal = instHoldings.reduce((s, h) => s + h.marketValue, 0);
-          const gains = instHoldings.filter(h => h.changePercent > 0).length;
-          const losses = instHoldings.filter(h => h.changePercent < 0).length;
+          const instHoldings = holdings.filter((h: any) => h.institutionId === inst.id);
+          const totalVal = instHoldings.reduce((s: number, h: any) => s + h.marketValue, 0);
+          const gains = instHoldings.filter((h: any) => h.changePercent > 0).length;
+          const losses = instHoldings.filter((h: any) => h.changePercent < 0).length;
+          const srcInfo = getInstitutionSourceInfo(inst.id);
+          const freshnessColor = srcInfo.freshness === 'live' ? C.green : srcInfo.freshness === 'recent' ? C.yellow : C.text3;
+
           return (
             <Link to={`/institutions/${inst.id}`} key={inst.id} style={{ textDecoration: 'none' }}>
               <div className="card-base" style={{ padding: 20, cursor: 'pointer' }}>
@@ -61,13 +70,27 @@ export default function Institutions() {
                     <div style={{ fontSize: 12, color: '#71717a', marginBottom: 6 }}>{inst.nameEn}</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <Globe size={11} color="#52525b" />
-                      <span style={{ fontSize: 11, color: '#52525b' }}>{inst.country}</span>
+                      <span style={{ fontSize: 11, color: '#71717a' }}>{inst.country}</span>
                       <span style={{ width: 1, height: 10, background: '#333', margin: '0 2px' }} />
                       <span style={{ fontSize: 11, color: typeColors[inst.type], background: typeColors[inst.type] + '18', padding: '1px 6px', borderRadius: 9999, border: `1px solid ${typeColors[inst.type]}33` }}>
                         {typeLabels[inst.type]}
                       </span>
                     </div>
                   </div>
+                </div>
+
+                {/* 数据来源标签 */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, padding: '6px 10px', background: '#0d0d0d', borderRadius: 8 }}>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: freshnessColor, flexShrink: 0, boxShadow: `0 0 5px ${freshnessColor}` }} />
+                  <Clock size={10} color={C.text3} />
+                  <span style={{ fontSize: 10, color: '#71717a' }}>
+                    数据来源: <span style={{ fontWeight: 700, color: srcInfo.freshness === 'live' ? '#38bdf8' : srcInfo.freshness === 'recent' ? C.yellow : C.text3 }}>{srcInfo.dataSource === 'SEC_EDGAR' ? 'SEC EDGAR 13F' : srcInfo.dataSource === 'HKEX' ? '港交所披露易' : '东方财富 QFII'}</span>
+                  </span>
+                  <span style={{ width: 1, height: 10, background: '#333', margin: '0 2px' }} />
+                  <span style={{ fontSize: 10, color: C.text3, fontFamily: 'JetBrains Mono, monospace' }}>{srcInfo.lastUpdated}</span>
+                  <span style={{ marginLeft: 'auto', fontSize: 9, padding: '1px 6px', borderRadius: 4, background: freshnessColor + '18', color: freshnessColor, fontWeight: 700 }}>
+                    {srcInfo.freshness === 'live' ? '实时' : srcInfo.freshness === 'recent' ? '近期' : '历史'}
+                  </span>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 12 }}>
@@ -92,7 +115,7 @@ export default function Institutions() {
                 {/* Top holdings preview */}
                 <div style={{ fontSize: 11, color: '#52525b', marginBottom: 4 }}>重仓股</div>
                 <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                  {instHoldings.slice(0, 4).map(h => (
+                  {instHoldings.slice(0, 4).map((h: any) => (
                     <div key={h.id} style={{ background: '#0f0f0f', border: '1px solid #1e1e1e', borderRadius: 4, padding: '2px 8px', fontSize: 11, fontFamily: 'JetBrains Mono, monospace', color: '#a1a1aa' }}>
                       {h.stockTicker}
                       <span style={{ color: h.changePercent > 0 ? '#22c55e' : h.changePercent < 0 ? '#ef4444' : '#71717a', marginLeft: 4 }}>

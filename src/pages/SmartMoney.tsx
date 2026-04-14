@@ -3,7 +3,7 @@ import {
   BarChart3, Building2, TrendingUp, TrendingDown,
   Search, Bell, Settings, ChevronRight,
   AlertTriangle, CheckCircle2, Globe, Shield,
-  Plus, Trash2, ExternalLink, PieChart as PieIcon, RefreshCw, DollarSign
+  Plus, Trash2, ExternalLink, PieChart as PieIcon, RefreshCw, DollarSign, Clock, Cpu
 } from 'lucide-react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -15,15 +15,14 @@ import {
 } from '../data/mockData'
 import { getStockPrices, convertCurrency, type StockPrice } from '../lib/stockPrices'
 import {
-  getAllHoldings, getAllChanges, getMeta,
-  getDataSourceLabel, getLastUpdated,
+  getAllHoldings, getAllChanges,
+  getDataSourceLabel, getLastUpdated, getDataSources, getHoldingDataSource,
 } from '../data/realData'
 import type { Institution, Holding, AlertRule, HoldingChange } from '../types'
 
 // Use combined data: mock (US) + HK/CN from realData
 const ALL_HOLDINGS = getAllHoldings()
 const ALL_CHANGES = getAllChanges()
-const DATA_META = getMeta()
 
 // ── Design Tokens ──────────────────────────────────────────────────────────────
 const C = {
@@ -74,6 +73,7 @@ function Pill({ value }: { value: number }) {
     </span>
   )
 }
+
 
 // ── Toggle ────────────────────────────────────────────────────────────────────
 function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
@@ -472,13 +472,14 @@ function ChangesBar({ changes }: { changes: HoldingChange[] }) {
 }
 
 // ── App ────────────────────────────────────────────────────────────────────────
-type Tab = 'overview' | 'institutions' | 'search' | 'changes' | 'alerts' | 'settings'
+type Tab = 'overview' | 'institutions' | 'search' | 'changes' | 'alerts' | 'ai' | 'settings'
 const NAV: { key: Tab; label: string; icon: any }[] = [
   { key: 'overview', label: '总览', icon: BarChart3 },
   { key: 'institutions', label: '机构', icon: Building2 },
   { key: 'search', label: '搜索', icon: Search },
   { key: 'changes', label: '异动', icon: TrendingUp },
   { key: 'alerts', label: '预警', icon: Bell },
+  { key: 'ai', label: 'AI产业', icon: Cpu },
   { key: 'settings', label: '设置', icon: Settings },
 ]
 
@@ -641,11 +642,39 @@ export default function SmartMoney() {
         {/* ══ OVERVIEW ═══════════════════════════════════════════════════════ */}
         {tab === 'overview' && (
           <div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 28 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 14 }}>
               <StatCard icon={Building2} label="覆盖机构" value="10家" sub="全球顶级主权 & 机构基金" color={C.blue} />
               <StatCard icon={BarChart3} label="披露持仓市值" value={fmt$(stats.totalValue)} sub="2025 Q4 披露值" color={C.yellow} />
               <StatCard icon={TrendingUp} label="本季增持王" value={stats.topGainer.ticker} sub={`${stats.topGainer.institution} · ${pct(stats.topGainer.change)}`} color={C.green} />
               <StatCard icon={TrendingDown} label="本季减持王" value={stats.topLoser.ticker} sub={`${stats.topLoser.institution} · ${pct(stats.topLoser.change)}`} color={C.red} />
+            </div>
+
+            {/* 数据源状态概览 */}
+            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, padding: '14px 18px', marginBottom: 20 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+                <Clock size={13} color={C.text2} />
+                <span style={{ fontSize: 12, fontWeight: 600, color: C.text2 }}>数据来源</span>
+                <span style={{ marginLeft: 'auto', fontSize: 11, color: C.text3 }}>鼠标悬停持仓行查看数据更新时间</span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+                {getDataSources().map(s => (
+                  <div key={s.source} style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#0d0d0d', borderRadius: 8, padding: '10px 12px' }}>
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: s.freshness === 'live' ? C.green : s.freshness === 'recent' ? C.yellow : C.text3, flexShrink: 0, boxShadow: `0 0 6px ${s.freshness === 'live' ? C.green : C.yellow}` }} />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: s.color }}>{s.labelShort}</span>
+                        <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 4, background: `${s.color}18`, color: s.freshness === 'live' ? C.green : s.freshness === 'recent' ? C.yellow : C.text3, fontWeight: 700 }}>
+                          {s.freshness === 'live' ? '实时' : s.freshness === 'recent' ? '近期' : '历史'}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: 10, color: C.text3, marginTop: 2 }}>{s.updateFreq}</div>
+                      <div style={{ fontSize: 11, color: C.text2, marginTop: 2, fontFamily: 'JetBrains Mono, monospace' }}>
+                        {s.lastUpdated} · {s.recordCount}条记录
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
@@ -979,6 +1008,8 @@ export default function SmartMoney() {
         )}
 
         {/* ══ SETTINGS ═══════════════════════════════════════════════════════ */}
+        {tab === 'ai' && <AIChainPanel />}
+        {tab === 'ai' && <AIChainPanel />}
         {tab === 'settings' && (
           <div style={{ maxWidth: 680 }}>
             <h2 style={{ fontSize: 20, fontWeight: 700, color: C.text, margin: '0 0 24px' }}>设置</h2>
