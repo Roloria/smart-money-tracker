@@ -12,6 +12,7 @@ export type AILayer = 'chip' | 'cloud' | 'app' | 'robot' | 'china_ai';
 export interface AILayerInfo {
   layer: AILayer;
   label: string;
+  labelShort: string;
   labelEn: string;
   color: string;
   description: string;
@@ -22,6 +23,7 @@ export const AI_LAYERS: AILayerInfo[] = [
   {
     layer: 'chip',
     label: 'AI 芯片/算力',
+    labelShort: '芯片',
     labelEn: 'AI Chips & Compute',
     color: '#f59e0b',
     description: 'GPU、CPU、ASIC、存储 — AI 算力基础层',
@@ -30,6 +32,7 @@ export const AI_LAYERS: AILayerInfo[] = [
   {
     layer: 'cloud',
     label: 'AI 云/基础设施',
+    labelShort: '云',
     labelEn: 'AI Cloud & Infra',
     color: '#38bdf8',
     description: '超大规模云服务商、Data Center、AI 网络',
@@ -38,6 +41,7 @@ export const AI_LAYERS: AILayerInfo[] = [
   {
     layer: 'app',
     label: 'AI 应用层',
+    labelShort: '应用',
     labelEn: 'AI Applications',
     color: '#22c55e',
     description: '企业 AI 软件、自动化、安全、内容生成',
@@ -46,6 +50,7 @@ export const AI_LAYERS: AILayerInfo[] = [
   {
     layer: 'robot',
     label: 'AI 终端/机器人',
+    labelShort: '终端',
     labelEn: 'AI Devices & Robotics',
     color: '#a78bfa',
     description: '自动驾驶、智能硬件、机器人、消费 AI 设备',
@@ -54,6 +59,7 @@ export const AI_LAYERS: AILayerInfo[] = [
   {
     layer: 'china_ai',
     label: '中国 AI',
+    labelShort: '中国AI',
     labelEn: 'China AI',
     color: '#f43f5e',
     description: '中国 AI 产业链：芯片/安防/大模型/云计算',
