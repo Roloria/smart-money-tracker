@@ -18,6 +18,9 @@ import {
   getAllHoldings, getAllChanges,
   getDataSourceLabel, getLastUpdated, getDataSources, getHoldingDataSource,
 } from '../data/realData'
+import { getAIChainSummary, getSmallCapSignals, AI_LAYERS } from '../data/aiChain'
+import AIChainPage from './AIChainPage'
+import SmallCapPage from './SmallCapPage'
 import type { Institution, Holding, AlertRule, HoldingChange } from '../types'
 
 // Use combined data: mock (US) + HK/CN from realData
@@ -472,7 +475,7 @@ function ChangesBar({ changes }: { changes: HoldingChange[] }) {
 }
 
 // ── App ────────────────────────────────────────────────────────────────────────
-type Tab = 'overview' | 'institutions' | 'search' | 'changes' | 'alerts' | 'settings'
+type Tab = 'overview' | 'institutions' | 'search' | 'changes' | 'alerts' | 'ai' | 'smallcap' | 'settings'
 const NAV: { key: Tab; label: string; icon: any }[] = [
   { key: 'overview', label: '总览', icon: BarChart3 },
   { key: 'institutions', label: '机构', icon: Building2 },
@@ -507,9 +510,10 @@ export default function SmartMoney() {
   }, [])
 
   // ── Data status ─────────────────────────────────────────────────────────────
-  const isLiveData = false
   const lastUpdatedLabel = getLastUpdated()
   const dataSourceLabel = getDataSourceLabel()
+  const sources = getDataSources()
+  const isLiveData = sources.some((s: any) => s.freshness === 'live')
 
   // Compute stats
   const stats = useMemo(() => {
@@ -806,90 +810,7 @@ export default function SmartMoney() {
                   <ChangesBar changes={filteredChanges} />
                 </div>
 
-                {/* ── AI产业链追踪 ── */}
-                <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 16 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
-                    <Cpu size={13} color={C.blue} />
-                    <span style={{ fontSize: 12, fontWeight: 600, color: C.text }}>AI产业链 · 小盘股追踪</span>
-                    <span style={{ marginLeft: 'auto', fontSize: 10, color: C.text3 }}>数据来源: Tushare Pro</span>
-                  </div>
 
-                  {/* AI Layer pills */}
-                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
-                    {AI_LAYERS.map(l => (
-                      <div key={l.layer} style={{
-                        display: 'flex', alignItems: 'center', gap: 5,
-                        padding: '4px 10px', borderRadius: 8, cursor: 'pointer',
-                        background: `${l.color}15`, border: `1px solid ${l.color}30`,
-                        fontSize: 11, fontWeight: 600, color: l.color,
-                      }}>
-                        <span>{l.label}</span>
-                        <span style={{ opacity: 0.7 }}>{getAIChainSummary().filter(s => s.layers.includes(l.layer)).length}只</span>
-                      </div>
-                    ))}
-                    <div style={{
-                      display: 'flex', alignItems: 'center', gap: 5,
-                      padding: '4px 10px', borderRadius: 8,
-                      background: `${C.purple}15`, border: `1px solid ${C.purple}30`,
-                      fontSize: 11, fontWeight: 600, color: C.purple,
-                    }}>
-                      <Star size={10} />小盘股 {getSmallCapSignals().filter(s => s.signal === 'new_position' || s.signal === 'accumulating').length}只信号
-                    </div>
-                  </div>
-
-                  {/* AI stocks mini table */}
-                  <div style={{ fontSize: 11, color: C.text3, marginBottom: 8 }}>AI持仓 · 季度变化</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                    {getAIChainSummary().slice(0, 8).map(s => (
-                      <div key={s.ticker} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 8px', background: '#0d0d0d', borderRadius: 6 }}>
-                        <span style={{ fontSize: 11, fontWeight: 700, fontFamily: 'JetBrains Mono, monospace', color: C.text, width: 72 }}>{s.ticker}</span>
-                        <div style={{ flex: 1, display: 'flex', gap: 4 }}>
-                          {s.layers.map(l => {
-                            const info = AI_LAYERS.find(x => x.layer === l)!;
-                            return <span key={l} style={{ fontSize: 9, padding: '1px 4px', borderRadius: 3, background: `${info.color}20`, color: info.color, fontWeight: 600 }}>{info.labelShort}</span>;
-                          })}
-                          {s.isSmallCap && <span style={{ fontSize: 9, padding: '1px 4px', borderRadius: 3, background: `${C.purple}20`, color: C.purple, fontWeight: 600 }}>小盘</span>}
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                          {s.avgChange >= 0
-                            ? <TrendingUp size={11} color={C.green} />
-                            : <TrendingDown size={11} color={C.red} />
-                          }
-                          <span style={{ fontSize: 11, fontWeight: 700, fontFamily: 'JetBrains Mono, monospace', color: s.avgChange >= 0 ? C.green : C.red }}>
-                            {s.avgChange >= 0 ? '+' : ''}{s.avgChange.toFixed(1)}%
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* 小盘股信号 */}
-                  <div style={{ fontSize: 11, color: C.text3, margin: '10px 0 8px', display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <Star size={11} color={C.purple} />小盘股信号
-                    {getSmallCapSignals().filter(s => s.signal === 'new_position').length > 0 && (
-                      <span style={{ color: C.red, fontWeight: 700 }}>🆕 {getSmallCapSignals().filter(s => s.signal === 'new_position').length}只新建仓</span>
-                    )}
-                    {getSmallCapSignals().filter(s => s.signal === 'accumulating').length > 0 && (
-                      <span style={{ color: C.green }}>📈 {getSmallCapSignals().filter(s => s.signal === 'accumulating').length}只加仓中</span>
-                    )}
-                  </div>
-                  <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
-                    {getSmallCapSignals().map(sig => {
-                      const sigColor = sig.signal === 'new_position' ? C.red : sig.signal === 'accumulating' ? C.green : sig.signal === 'momentum' ? C.yellow : C.text3;
-                      return (
-                        <div key={sig.ticker} style={{
-                          padding: '3px 8px', borderRadius: 6, fontSize: 10, fontWeight: 600,
-                          background: `${sigColor}15`, border: `1px solid ${sigColor}30`, color: sigColor,
-                          display: 'flex', alignItems: 'center', gap: 4,
-                        }}>
-                          <span>{sig.ticker}</span>
-                          <span style={{ opacity: 0.8 }}>{sig.name}</span>
-                          <span>{sig.signal === 'new_position' ? '🆕' : sig.signal === 'accumulating' ? '📈' : '📊'}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -1179,6 +1100,8 @@ export default function SmartMoney() {
 
         {/* ══ SETTINGS ═══════════════════════════════════════════════════════ */}
         {tab === 'ai' && <AIChainPanel />}
+        {tab === 'ai' && <AIChainPage />}
+        {tab === 'smallcap' && <SmallCapPage />}
         {tab === 'settings' && (
           <div style={{ maxWidth: 680 }}>
             <h2 style={{ fontSize: 20, fontWeight: 700, color: C.text, margin: '0 0 24px' }}>设置</h2>
