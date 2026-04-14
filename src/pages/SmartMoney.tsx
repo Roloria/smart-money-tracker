@@ -1,16 +1,27 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, lazy, Suspense } from 'react'
 import {
   BarChart3, Building2, TrendingUp, TrendingDown,
   Search, Bell, Settings, ChevronRight,
   AlertTriangle, CheckCircle2, Globe, Shield,
-  Plus, Trash2, ExternalLink, PieChart as PieIcon, RefreshCw, DollarSign, Clock, Brain, Star, Cpu, Database
+  Plus, Trash2, ExternalLink, Wallet, PieChart as PieIcon, RefreshCw, DollarSign, Clock, Brain, Star, Cpu, Database, Loader2
 } from 'lucide-react'
 import AIChainPanel from './AIChainPanel'
 import AIChainPage from './AIChainPage'
-import InstitutionRankings from '../components/InstitutionRankings'
-import DataSourcePanel from '../components/DataSourcePanel'
-import SectorHeatmap from '../components/SectorHeatmap'
-import InstitutionOverlap from '../components/InstitutionOverlap'
+import InstitutionDetailPage from './InstitutionDetailPage'
+
+// Lazy-load heavy components to reduce initial bundle size
+const InstitutionRankings = lazy(() => import('../components/InstitutionRankings'))
+const InstitutionOverlap = lazy(() => import('../components/InstitutionOverlap'))
+const SectorHeatmap = lazy(() => import('../components/SectorHeatmap'))
+const DataSourcePanel = lazy(() => import('../components/DataSourcePanel'))
+const KevinPortfolio = lazy(() => import('../components/KevinPortfolio'))
+
+// Loading fallback for lazy components
+const LazyLoader = ({ h = 400 }: { h?: number }) => (
+  <div style={{ height: h, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#141414', borderRadius: 12, border: '1px solid #1e1e1e' }}>
+    <Loader2 size={24} color="#38bdf8" style={{ animation: 'spin 1s linear infinite' }} />
+  </div>
+)
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, PieChart, Pie, Cell,
@@ -481,7 +492,7 @@ function ChangesBar({ changes }: { changes: HoldingChange[] }) {
 }
 
 // ── App ────────────────────────────────────────────────────────────────────────
-type Tab = 'overview' | 'institutions' | 'search' | 'changes' | 'alerts' | 'ai' | 'rankings' | 'overlap' | 'smallcap' | 'settings'
+type Tab = 'overview' | 'institutions' | 'search' | 'changes' | 'alerts' | 'ai' | 'rankings' | 'overlap' | 'mine' | 'smallcap' | 'settings'
 const NAV: { key: Tab; label: string; icon: any }[] = [
   { key: 'overview', label: '总览', icon: BarChart3 },
   { key: 'institutions', label: '机构', icon: Building2 },
@@ -491,6 +502,7 @@ const NAV: { key: Tab; label: string; icon: any }[] = [
   { key: 'ai', label: 'AI产业', icon: Cpu },
   { key: 'rankings', label: '增减持', icon: TrendingUp },
   { key: 'overlap', label: '持仓重叠', icon: BarChart3 },
+  { key: 'mine', label: '我的持仓', icon: Wallet },
   { key: 'smallcap', label: '小盘股', icon: Star },
   { key: 'settings', label: '设置', icon: Settings },
 ]
@@ -500,6 +512,7 @@ const defaultAlertRules: AlertRule[] = _defaultAlertRules
 export default function SmartMoney() {
   const [tab, setTab] = useState<Tab>('overview')
   const [instFilter, setInstFilter] = useState<number | null>(null)
+  const [instDetailId, setInstDetailId] = useState<number | null>(null)
   const [marketFilter, setMarketFilter] = useState<'ALL' | 'US' | 'HK' | 'CN'>('ALL')
   const [changeType, setChangeType] = useState<'all' | 'increase' | 'decrease' | 'new' | 'exited'>('all')
   const [chartMarket, setChartMarket] = useState<'ALL' | 'US' | 'HK' | 'CN'>('ALL')
@@ -841,7 +854,7 @@ export default function SmartMoney() {
                 </div>
                 <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 16 }}>
                   <div style={{ fontSize: 12, fontWeight: 600, color: C.text3, marginBottom: 14 }}>板块分布</div>
-                  <SectorHeatmap holdings={filteredHoldings} />
+                  <Suspense fallback={<LazyLoader h={300} />}><SectorHeatmap holdings={filteredHoldings} /></Suspense>
                 </div>
                 <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 16 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
@@ -866,82 +879,75 @@ export default function SmartMoney() {
           </div>
         )}
 
-        {/* ══ INSTITUTIONS ══════════════════════════════════════════════════ */}
+                {/* ══ INSTITUTIONS ══════════════════════════════════════════════════ */}
         {tab === 'institutions' && (
           <div>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24 }}>
-              <button
-                onClick={() => setInstFilter(null)}
-                style={{
-                  padding: '5px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600,
-                  background: instFilter === null ? `${C.blue}20` : 'transparent',
-                  border: `1px solid ${instFilter === null ? C.blue + '40' : C.border}`,
-                  color: instFilter === null ? C.blue : C.text3, cursor: 'pointer',
-                }}
-              >
-                全部机构
-              </button>
-              {institutions.map((inst: Institution) => (
-                <button
-                  key={inst.id}
-                  onClick={() => setInstFilter(inst.id)}
-                  style={{
-                    padding: '5px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600,
-                    background: instFilter === inst.id ? `${inst.color}20` : 'transparent',
-                    border: `1px solid ${instFilter === inst.id ? inst.color + '50' : C.border}`,
-                    color: instFilter === inst.id ? inst.color : C.text3, cursor: 'pointer',
-                  }}
-                >
-                  {inst.name}
-                </button>
-              ))}
-            </div>
-
-            {selectedInst ? (
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
-                  <div style={{
-                    width: 52, height: 52, borderRadius: 14,
-                    background: `${selectedInst.color}20`,
-                    border: `2px solid ${selectedInst.color}40`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 22, fontWeight: 800, color: selectedInst.color,
-                    fontFamily: 'JetBrains Mono, monospace',
-                  }}>
-                    {selectedInst.name[0]}
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 20, fontWeight: 700, color: C.text }}>{selectedInst.name}</div>
-                    <div style={{ fontSize: 12, color: C.text3 }}>{selectedInst.nameEn} · {selectedInst.country} · {typeLabels[selectedInst.type]}</div>
-                  </div>
-                  <button onClick={() => setInstFilter(null)} style={{
-                    marginLeft: 'auto', padding: '7px 16px', borderRadius: 8,
-                    background: 'transparent', border: `1px solid ${C.border}`,
-                    color: C.text3, fontSize: 12, cursor: 'pointer',
-                  }}>
-                    ← 返回全部
-                  </button>
-                </div>
-                <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, overflow: 'hidden' }}>
-                  <HoldingsTable prices={prices} holdings={ALL_HOLDINGS.filter((h: Holding) => h.institutionId === selectedInst.id)} />
-                </div>
-              </div>
+            {instDetailId !== null ? (
+              <InstitutionDetailPage
+                institutionId={instDetailId}
+                onBack={() => setInstDetailId(null)}
+              />
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
-                {institutions.map((inst: Institution) => (
-                  <InstitutionCard
-                    key={inst.id}
-                    inst={inst}
-                    holdings={ALL_HOLDINGS}
-                    onClick={() => setInstFilter(inst.id)}
-                  />
-                ))}
+              <div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14 }}>
+                  {institutions.map((inst: Institution) => {
+                    const instHoldings = ALL_HOLDINGS.filter((h: Holding) => h.institutionId === inst.id)
+                    const totalVal = instHoldings.reduce((s: number, h: Holding) => s + h.marketValue, 0)
+                    const instTypeLabel: Record<string, string> = { hedge: '对冲基金', bank: '投资银行', asset_manager: '资产管理', sovereign: '主权基金' }
+                    return (
+                      <div
+                        key={inst.id}
+                        onClick={() => { setInstFilter(inst.id); setInstDetailId(inst.id) }}
+                        style={{
+                          background: C.card, border: `1px solid ${inst.color}30`,
+                          borderRadius: 14, padding: '18px 20px',
+                          cursor: 'pointer', transition: 'all 0.15s',
+                          position: 'relative', overflow: 'hidden',
+                        }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = inst.color + '60'; (e.currentTarget as HTMLElement).style.background = inst.color + '08' }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = inst.color + '30'; (e.currentTarget as HTMLElement).style.background = C.card }}
+                      >
+                        <div style={{ position: 'absolute', top: -10, right: -10, width: 80, height: 80, borderRadius: '50%', background: inst.color + '10' }} />
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                          <div style={{
+                            width: 44, height: 44, borderRadius: 12,
+                            background: inst.color + '20', border: `1px solid ${inst.color}40`,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: 18, fontWeight: 900, color: inst.color,
+                          }}>{inst.name[0]}</div>
+                          <div>
+                            <div style={{ fontSize: 15, fontWeight: 800, color: C.text }}>{inst.name}</div>
+                            <div style={{ fontSize: 11, color: C.text3 }}>{instTypeLabel[inst.type] || inst.type}</div>
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: 16, marginBottom: 10 }}>
+                          <div>
+                            <div style={{ fontSize: 11, color: C.text3 }}>披露市值</div>
+                            <div style={{ fontSize: 16, fontWeight: 800, color: inst.color, fontFamily: 'JetBrains Mono, monospace' }}>
+                              ${(totalVal / 1e9).toFixed(1)}B
+                            </div>
+                          </div>
+                          <div>
+                            <div style={{ fontSize: 11, color: C.text3 }}>持股数</div>
+                            <div style={{ fontSize: 16, fontWeight: 800, color: C.text2 }}>{instHoldings.length}</div>
+                          </div>
+                        </div>
+                        <div style={{ fontSize: 11, color: C.text3 }}>
+                          {inst.country} · {inst.nameEn}
+                        </div>
+                        <div style={{ fontSize: 10, color: inst.color, marginTop: 6 }}>
+                          点击查看详情 →
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
             )}
           </div>
         )}
 
-        {/* ══ SEARCH ══════════════════════════════════════════════════════ */}
+        {/* ══ SEARCH{/* ══ SEARCH ══════════════════════════════════════════════════════ */}
         {tab === 'search' && (
           <div>
             <div style={{ marginBottom: 24 }}>
@@ -1151,8 +1157,9 @@ export default function SmartMoney() {
         {/* ══ SETTINGS ═══════════════════════════════════════════════════════ */}
         {tab === 'ai' && <AIChainPanel />}
         {tab === 'ai' && <AIChainPage />}
-        {tab === 'rankings' && <InstitutionRankings />}
-        {tab === 'overlap' && <InstitutionOverlap />}
+        {tab === 'rankings' && <Suspense fallback={<LazyLoader />}><InstitutionRankings /></Suspense>}
+        {tab === 'overlap' && <Suspense fallback={<LazyLoader />}><InstitutionOverlap /></Suspense>}
+        {tab === 'mine' && <Suspense fallback={<LazyLoader />}><KevinPortfolio /></Suspense>}
         {tab === 'smallcap' && <SmallCapPage />}
         {tab === 'settings' && (
           <div style={{ maxWidth: 680 }}>
@@ -1221,7 +1228,7 @@ export default function SmartMoney() {
       </main>
 
       {showDataSourcePanel && (
-        <DataSourcePanel onClose={() => setShowDataSourcePanel(false)} />
+        <Suspense fallback={<LazyLoader h={500} />}><DataSourcePanel onClose={() => setShowDataSourcePanel(false)} /></Suspense>
       )}
     </div>
   )

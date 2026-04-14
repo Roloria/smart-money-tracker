@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { Bell, RefreshCw, Database, Check } from 'lucide-react';
 
+const DEFAULT_FEISHU = 'https://open.feishu.cn/open-apis/bot/v2/hook/acb1705d-f658-4521-8387-404acf50a098';
+
 export default function SettingsPage() {
-  const [feishuWebhook, setFeishuWebhook] = useState('https://open.feishu.cn/open-apis/bot/v2/hook/xxx');
-  const [emailTo, setEmailTo] = useState('kevin@example.com');
+  const [feishuWebhook, setFeishuWebhook] = useState(DEFAULT_FEISHU);
+  const [emailTo, setEmailTo] = useState('');
   const [refreshFreq, setRefreshFreq] = useState('6h');
   const [saved, setSaved] = useState(false);
 
@@ -11,6 +13,8 @@ export default function SettingsPage() {
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
+
+  const isFeishuValid = feishuWebhook.startsWith('https://open.feishu.cn/open-apis/bot/v2/hook/') && feishuWebhook.length > 60;
 
   return (
     <div>
@@ -31,13 +35,13 @@ export default function SettingsPage() {
               <label style={{fontSize:12,color:'#71717a',display:'block',marginBottom:6}}>飞书 Webhook URL</label>
               <div style={{position:'relative'}}>
                 <input className="input-base" value={feishuWebhook} onChange={e=>setFeishuWebhook(e.target.value)} style={{paddingRight:120}} />
-                <span style={{position:'absolute',right:10,top:'50%',transform:'translateY(-50%)',fontSize:11,color:'#22c55e',fontFamily:'JetBrains Mono,monospace'}}>已配置</span>
+                <span style={{position:'absolute',right:10,top:'50%',transform:'translateY(-50%)',fontSize:11,color: isFeishuValid ? '#22c55e' : '#ef4444',fontFamily:'JetBrains Mono,monospace'}}>{isFeishuValid ? '✅ 已配置' : '❌ 未配置'}</span>
               </div>
               <div style={{fontSize:11,color:'#52525b',marginTop:4}}>预警触发时发送飞书消息通知</div>
             </div>
             <div>
               <label style={{fontSize:12,color:'#71717a',display:'block',marginBottom:6}}>通知邮箱</label>
-              <input className="input-base" value={emailTo} onChange={e=>setEmailTo(e.target.value)} />
+              <input className="input-base" value={emailTo} onChange={e=>setEmailTo(e.target.value)} placeholder="接收预警邮件通知（可选）" />
               <div style={{fontSize:11,color:'#52525b',marginTop:4}}>接收预警邮件通知</div>
             </div>
           </div>
@@ -69,8 +73,8 @@ export default function SettingsPage() {
             {[
               {name:'SEC EDGAR 13F',desc:'美国证券交易委员会 - 机构持仓季度报告',avail:'✅ 已接入'},
               {name:'Bloomberg Terminal',desc:'实时市场数据 + 机构持仓分析',avail:'✅ 已接入'},
-              {name:'Wind Financial Terminal',desc:'A股/港股持仓数据',avail:'⚠️ Phase 2 接入'},
-              {name:'S&P Capital IQ',desc:'全球机构持仓分析',avail:'⚠️ Phase 2 接入'},
+              {name:'Wind Financial Terminal',desc:'A股/港股持仓数据（真实数据）',avail:'✅ 部分接入'},
+              {name:'S&P Capital IQ',desc:'全球机构持仓分析',avail:'⚠️ 计划中'},
             ].map(d => (
               <div key={d.name} style={{display:'flex',alignItems:'center',gap:12,padding:'10px 14px',background:'#0f0f0f',borderRadius:6}}>
                 <div style={{flex:1}}>
@@ -85,14 +89,14 @@ export default function SettingsPage() {
 
         {/* About */}
         <div className="card-base" style={{padding:24,marginBottom:20}}>
-          <div style={{fontSize:14,fontWeight:600,color:'#fafafa',marginBottom:12}}>关于 Phase 1</div>
+          <div style={{fontSize:14,fontWeight:600,color:'#fafafa',marginBottom:12}}>Smart Money Tracker</div>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,fontSize:12,color:'#71717a'}}>
-            <div><span style={{color:'#52525b'}}>版本：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>v1.0.0-mvp</span></div>
+            <div><span style={{color:'#52525b'}}>当前版本：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>Phase 6</span></div>
             <div><span style={{color:'#52525b'}}>数据周期：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>2025 Q4</span></div>
-            <div><span style={{color:'#52525b'}}>追踪机构：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>10</span></div>
-            <div><span style={{color:'#52525b'}}>持仓数据：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>模拟数据</span></div>
+            <div><span style={{color:'#52525b'}}>追踪机构：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>10（美股）+ 真实港/A股</span></div>
+            <div><span style={{color:'#52525b'}}>下一版本：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>Phase 7</span></div>
           </div>
-          <div style={{marginTop:10,fontSize:12,color:'#3f3f46',lineHeight:1.6}}>Phase 1 MVP 使用模拟数据展示界面原型。真实 SEC 13F 数据接入预计 Phase 2 实现（2026 Q1）。</div>
+          <div style={{marginTop:10,fontSize:12,color:'#3f3f46',lineHeight:1.6}}>Phase 6：AI产业链追踪 + 小盘股信号 + SEC/HKEX/QFII真实数据标注。Phase 7计划：增减持排行榜 + 持仓重叠分析 + 板块热力图。</div>
         </div>
 
         {/* Save */}
