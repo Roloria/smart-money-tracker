@@ -22,6 +22,10 @@ export interface Holding {
   changeShares: number;
   changePercent: number;
   market?: 'US' | 'HK' | 'CN';
+  /** 数据来源标签（SEC_EDGAR / EASTMONEY_QFII / TUSHARE_HSGT / HKEX） */
+  _dataSource?: string;
+  /** 是否来自真实数据源 */
+  _isRealData?: boolean;
 }
 
 export interface AlertRule {

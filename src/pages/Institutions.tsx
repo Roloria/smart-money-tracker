@@ -84,7 +84,7 @@ export default function Institutions() {
                   <div style={{ width: 6, height: 6, borderRadius: '50%', background: freshnessColor, flexShrink: 0, boxShadow: `0 0 5px ${freshnessColor}` }} />
                   <Clock size={10} color={C.text3} />
                   <span style={{ fontSize: 10, color: '#71717a' }}>
-                    数据来源: <span style={{ fontWeight: 700, color: srcInfo.freshness === 'live' ? '#38bdf8' : srcInfo.freshness === 'recent' ? C.yellow : C.text3 }}>{srcInfo.dataSource === 'SEC_EDGAR' ? 'SEC EDGAR 13F' : srcInfo.dataSource === 'HKEX' ? '港交所披露易' : '东方财富 QFII'}</span>
+                    数据来源: <span style={{ fontWeight: 700, color: srcInfo.freshness === 'live' ? '#38bdf8' : srcInfo.freshness === 'recent' ? C.yellow : C.text3 }}>{srcInfo.source === 'SEC_EDGAR' ? 'SEC EDGAR 13F' : srcInfo.source === 'HKEX' ? '港交所披露易' : '东方财富 QFII'}</span>
                   </span>
                   <span style={{ width: 1, height: 10, background: '#333', margin: '0 2px' }} />
                   <span style={{ fontSize: 10, color: C.text3, fontFamily: 'JetBrains Mono, monospace' }}>{srcInfo.lastUpdated}</span>

@@ -3,15 +3,21 @@ import {
   BarChart3, Building2, TrendingUp, TrendingDown,
   Search, Bell, Settings, ChevronRight,
   AlertTriangle, CheckCircle2, Globe, Shield,
-  Plus, Trash2, ExternalLink, PieChart as PieIcon, RefreshCw, DollarSign, Clock, Brain, Star
+  Plus, Trash2, ExternalLink, PieChart as PieIcon, RefreshCw, DollarSign, Clock, Brain, Star, Cpu, Database
 } from 'lucide-react'
+import AIChainPanel from './AIChainPanel'
+import AIChainPage from './AIChainPage'
+import InstitutionRankings from '../components/InstitutionRankings'
+import DataSourcePanel from '../components/DataSourcePanel'
+import SectorHeatmap from '../components/SectorHeatmap'
+import InstitutionOverlap from '../components/InstitutionOverlap'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, PieChart, Pie, Cell,
   LineChart, Line,
 } from 'recharts'
 import {
-  institutions, holdings, holdingChanges, alertRules
+  institutions, holdings, holdingChanges, alertRules as _defaultAlertRules
 } from '../data/mockData'
 import { getStockPrices, convertCurrency, type StockPrice } from '../lib/stockPrices'
 import {
@@ -21,8 +27,6 @@ import {
 import AIFlowPage from './AIFlowPage'
 import SmallCapPage from './SmallCapPage'
 import { getAIChainSummary, getSmallCapSignals, AI_LAYERS } from '../data/aiChain'
-import AIChainPage from './AIChainPage'
-import SmallCapPage from './SmallCapPage'
 import type { Institution, Holding, AlertRule, HoldingChange } from '../types'
 
 // Use combined data: mock (US) + HK/CN from realData
@@ -132,12 +136,12 @@ function StatCard({ icon: Icon, label, value, sub, color }: {
 // ── Holdings Table ────────────────────────────────────────────────────────────
 function DataSourceBadge({ source }: { source?: string }) {
   const sourceMap: Record<string, { label: string; color: string }> = {
-    SEC_EDGAR_MOCK: { label: 'SEC 13F', color: C.blue },
-    HKEX_MOCK: { label: '港交所', color: C.yellow },
-    EASTMONEY_QFII_MOCK: { label: 'QFII', color: C.green },
-    MOCK: { label: '模拟', color: C.text3 },
+    SEC_EDGAR: { label: 'SEC 13F', color: C.blue },
+    HKEX: { label: '港交所', color: C.yellow },
+    EASTMONEY_QFII: { label: 'QFII', color: C.green },
+    TUSHARE_HSGT: { label: 'Tushare', color: '#a78bfa' },
   }
-  const info = sourceMap[source || 'MOCK'] || sourceMap['MOCK']
+  const info = sourceMap[source || 'SEC_EDGAR'] || sourceMap['SEC_EDGAR']
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center',
@@ -236,7 +240,7 @@ function HoldingsTable({ holdings, onTickerClick, prices }: {
                   <Pill value={h.changePercent} />
                 </td>
                 <td style={{ padding: '12px' }}>
-                  <DataSourceBadge source={(h as any).dataSource} />
+                  <DataSourceBadge source={(h as any)._dataSource} />
                 </td>
               </tr>
             )
@@ -477,7 +481,7 @@ function ChangesBar({ changes }: { changes: HoldingChange[] }) {
 }
 
 // ── App ────────────────────────────────────────────────────────────────────────
-type Tab = 'overview' | 'institutions' | 'search' | 'changes' | 'alerts' | 'ai' | 'smallcap' | 'settings'
+type Tab = 'overview' | 'institutions' | 'search' | 'changes' | 'alerts' | 'ai' | 'rankings' | 'overlap' | 'smallcap' | 'settings'
 const NAV: { key: Tab; label: string; icon: any }[] = [
   { key: 'overview', label: '总览', icon: BarChart3 },
   { key: 'institutions', label: '机构', icon: Building2 },
@@ -485,21 +489,28 @@ const NAV: { key: Tab; label: string; icon: any }[] = [
   { key: 'changes', label: '异动', icon: TrendingUp },
   { key: 'alerts', label: '预警', icon: Bell },
   { key: 'ai', label: 'AI产业', icon: Cpu },
+  { key: 'rankings', label: '增减持', icon: TrendingUp },
+  { key: 'overlap', label: '持仓重叠', icon: BarChart3 },
+  { key: 'smallcap', label: '小盘股', icon: Star },
   { key: 'settings', label: '设置', icon: Settings },
 ]
+
+const defaultAlertRules: AlertRule[] = _defaultAlertRules
 
 export default function SmartMoney() {
   const [tab, setTab] = useState<Tab>('overview')
   const [instFilter, setInstFilter] = useState<number | null>(null)
   const [marketFilter, setMarketFilter] = useState<'ALL' | 'US' | 'HK' | 'CN'>('ALL')
   const [changeType, setChangeType] = useState<'all' | 'increase' | 'decrease' | 'new' | 'exited'>('all')
+  const [chartMarket, setChartMarket] = useState<'ALL' | 'US' | 'HK' | 'CN'>('ALL')
   const [searchQuery, setSearchQuery] = useState('')
   const [alertOnly, setAlertOnly] = useState(false)
-  const [rules, setRules] = useState<AlertRule[]>(alertRules)
+  const [rules, setRules] = useState<AlertRule[]>(defaultAlertRules)
   const [showRuleForm, setShowRuleForm] = useState(false)
   const [ruleForm, setRuleForm] = useState({ ticker: '', threshold: 20, email: true, feishu: false })
   const [prices, setPrices] = useState<Map<string, StockPrice>>(new Map())
   const [pricesLoading, setPricesLoading] = useState(false)
+  const [showDataSourcePanel, setShowDataSourcePanel] = useState(false)
 
   // ── Fetch live stock prices ───────────────────────────────────────────────
   useEffect(() => {
@@ -548,8 +559,16 @@ export default function SmartMoney() {
     let list = ALL_CHANGES
     if (changeType !== 'all') list = list.filter((c: HoldingChange) => c.changeType === changeType)
     if (instFilter !== null) list = list.filter((c: HoldingChange) => c.institutionId === instFilter)
+    if (chartMarket !== 'ALL') {
+      list = list.filter((c: HoldingChange) => {
+        if (chartMarket === 'US') return !c.stockTicker.includes('.HK') && !c.stockTicker.match(/^\d{6}$/)
+        if (chartMarket === 'HK') return c.stockTicker.includes('.HK')
+        if (chartMarket === 'CN') return !!c.stockTicker.match(/^\d{6}$/)
+        return true
+      })
+    }
     return [...list].sort((a: HoldingChange, b: HoldingChange) => Math.abs(b.changePercent) - Math.abs(a.changePercent))
-  }, [changeType, instFilter])
+  }, [changeType, instFilter, chartMarket])
 
   const selectedInst = instFilter !== null ? institutions.find((x: Institution) => x.id === instFilter) : null
 
@@ -585,7 +604,7 @@ export default function SmartMoney() {
             </div>
             <div>
               <div style={{ fontSize: 13, fontWeight: 700, color: C.text, lineHeight: 1.2 }}>聪明钱去了哪儿</div>
-              <div style={{ fontSize: 10, color: C.text3 }}>Smart Money Tracker · 10家机构</div>
+              <div style={{ fontSize: 10, color: C.text3 }}>Smart Money Tracker · {institutions.length}家机构</div>
             </div>
           </div>
           <div style={{ flex: 1, display: 'flex', gap: 20, overflow: 'hidden', fontSize: 12, fontFamily: 'JetBrains Mono, monospace' }}>
@@ -617,6 +636,19 @@ export default function SmartMoney() {
               <Globe size={11} />
               {dataSourceLabel}
             </div>
+            <button
+              onClick={() => setShowDataSourcePanel(true)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 5,
+                padding: '4px 10px', borderRadius: 9999,
+                background: `${C.blue}12`, border: `1px solid ${C.blue}30`,
+                fontSize: 11, color: C.blue, cursor: 'pointer',
+                fontWeight: 600,
+              }}
+            >
+              <Database size={11} />
+              数据源
+            </button>
           </div>
         </div>
         <div style={{ display: 'flex', padding: '0 24px', gap: 2 }}>
@@ -649,7 +681,7 @@ export default function SmartMoney() {
         {tab === 'overview' && (
           <div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 14 }}>
-              <StatCard icon={Building2} label="覆盖机构" value="10家" sub="全球顶级主权 & 机构基金" color={C.blue} />
+              <StatCard icon={Building2} label="覆盖机构" value={`${institutions.length}家`} sub="全球顶级主权 & 机构基金" color={C.blue} />
               <StatCard icon={BarChart3} label="披露持仓市值" value={fmt$(stats.totalValue)} sub="2025 Q4 披露值" color={C.yellow} />
               <StatCard icon={TrendingUp} label="本季增持王" value={stats.topGainer.ticker} sub={`${stats.topGainer.institution} · ${pct(stats.topGainer.change)}`} color={C.green} />
               <StatCard icon={TrendingDown} label="本季减持王" value={stats.topLoser.ticker} sub={`${stats.topLoser.institution} · ${pct(stats.topLoser.change)}`} color={C.red} />
@@ -808,7 +840,23 @@ export default function SmartMoney() {
                   <MarketPie holdings={filteredHoldings} />
                 </div>
                 <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 16 }}>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: C.text3, marginBottom: 14 }}>季度异动 Top 8</div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: C.text3, marginBottom: 14 }}>板块分布</div>
+                  <SectorHeatmap holdings={filteredHoldings} />
+                </div>
+                <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, padding: 16 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: C.text3 }}>季度异动 Top 8</div>
+                    <div style={{ display: 'flex', gap: 2 }}>
+                      {([['ALL','整体'],['US','🇺🇸美股'],['HK','🇭🇰港股'],['CN','🇨🇳A股']] as [string,string][]).map(([k, label]) => (
+                        <button key={k} onClick={() => setChartMarket(k as any)} style={{
+                          padding: '3px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600,
+                          background: chartMarket === k ? `${C.blue}20` : 'transparent',
+                          border: `1px solid ${chartMarket === k ? C.blue + '40' : C.border}`,
+                          color: chartMarket === k ? C.blue : C.text3, cursor: 'pointer',
+                        }}>{label}</button>
+                      ))}
+                    </div>
+                  </div>
                   <ChangesBar changes={filteredChanges} />
                 </div>
 
@@ -1103,8 +1151,8 @@ export default function SmartMoney() {
         {/* ══ SETTINGS ═══════════════════════════════════════════════════════ */}
         {tab === 'ai' && <AIChainPanel />}
         {tab === 'ai' && <AIChainPage />}
-        {tab === 'smallcap' && <SmallCapPage />}
-        {tab === 'ai' && <AIFlowPage />}
+        {tab === 'rankings' && <InstitutionRankings />}
+        {tab === 'overlap' && <InstitutionOverlap />}
         {tab === 'smallcap' && <SmallCapPage />}
         {tab === 'settings' && (
           <div style={{ maxWidth: 680 }}>
@@ -1171,6 +1219,10 @@ export default function SmartMoney() {
           </div>
         )}
       </main>
+
+      {showDataSourcePanel && (
+        <DataSourcePanel onClose={() => setShowDataSourcePanel(false)} />
+      )}
     </div>
   )
 }

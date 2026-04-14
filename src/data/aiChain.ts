@@ -142,7 +142,7 @@ export function getAIChainSummary(): AIStockSummary[] {
       tickerMap.set(h.stockTicker, {
         ticker: h.stockTicker,
         name: h.stockName,
-        market: h.market,
+        market: h.market ?? 'US',
         sector: h.sector,
         layers: matchingLayers,
         totalValue: h.marketValue,

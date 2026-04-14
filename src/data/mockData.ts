@@ -11,6 +11,7 @@ export const institutions: Institution[] = [
   { id: 8, name: '联博资管', nameEn: 'AllianceBernstein', type: 'asset_manager', country: '美国', color: '#f43f5e', totalValue: 35600000000, holdingCount: 98 },
   { id: 9, name: '阿布扎比投资局', nameEn: 'Abu Dhabi Investment Authority', type: 'sovereign', country: '阿联酋', color: '#84cc16', totalValue: 993000000000, holdingCount: 542 },
   { id: 10, name: '科威特投资局', nameEn: 'Kuwait Investment Authority', type: 'sovereign', country: '科威特', color: '#e879f9', totalValue: 750000000000, holdingCount: 387 },
+  { id: 11, name: '摩根士丹利', nameEn: 'Morgan Stanley', type: 'bank', country: '美国', color: '#ec4899', totalValue: 95000000000, holdingCount: 220 },
 ];
 
 export const holdings: Holding[] = [
@@ -69,6 +70,19 @@ export const holdings: Holding[] = [
   { id: 43, institutionId: 10, stockTicker: 'GOOGL', stockName: '谷歌', sector: '科技', shares: 95000000, marketValue: 17100000000, ownershipPercent: 11.4, market: 'US', quarter: '2025Q4', changeShares: 6000000, changePercent: 6.7 },
   { id: 44, institutionId: 10, stockTicker: 'BRK.B', stockName: '伯克希尔B', sector: '金融', shares: 60000000, marketValue: 25200000000, ownershipPercent: 5.6, market: 'US', quarter: '2025Q4', changeShares: 3000000, changePercent: 5.3 },
   { id: 45, institutionId: 10, stockTicker: 'KO', stockName: '可口可乐', sector: '消费', shares: 180000000, marketValue: 10800000000, ownershipPercent: 11.4, market: 'US', quarter: '2025Q4', changeShares: 0, changePercent: 0 },
+  // Morgan Stanley
+  { id: 46, institutionId: 11, stockTicker: 'AAPL', stockName: '苹果', sector: '科技', shares: 70000000, marketValue: 14700000000, ownershipPercent: 4.5, market: 'US', quarter: '2025Q4', changeShares: 5000000, changePercent: 7.7 },
+  { id: 47, institutionId: 11, stockTicker: 'MSFT', stockName: '微软', sector: '科技', shares: 45000000, marketValue: 18900000000, ownershipPercent: 4.3, market: 'US', quarter: '2025Q4', changeShares: 3000000, changePercent: 7.2 },
+  { id: 48, institutionId: 11, stockTicker: 'AMZN', stockName: '亚马逊', sector: '消费', shares: 22000000, marketValue: 4620000000, ownershipPercent: 3.1, market: 'US', quarter: '2025Q4', changeShares: 1500000, changePercent: 7.3 },
+  { id: 49, institutionId: 11, stockTicker: 'GS', stockName: '高盛', sector: '金融', shares: 15000000, marketValue: 6600000000, ownershipPercent: 6.1, market: 'US', quarter: '2025Q4', changeShares: 1000000, changePercent: 7.1 },
+  { id: 50, institutionId: 11, stockTicker: 'BAC', stockName: '美国银行', sector: '金融', shares: 65000000, marketValue: 2600000000, ownershipPercent: 5.2, market: 'US', quarter: '2025Q4', changeShares: 3000000, changePercent: 4.9 },
+  { id: 51, institutionId: 11, stockTicker: 'BLK', stockName: '贝莱德', sector: '金融', shares: 4500000, marketValue: 4725000000, ownershipPercent: 3.8, market: 'US', quarter: '2025Q4', changeShares: 500000, changePercent: 12.5 },
+  { id: 52, institutionId: 11, stockTicker: 'META', stockName: 'Meta', sector: '科技', shares: 12000000, marketValue: 6840000000, ownershipPercent: 1.3, market: 'US', quarter: '2025Q4', changeShares: -1000000, changePercent: -7.7 },
+  { id: 53, institutionId: 11, stockTicker: 'GOOGL', stockName: '谷歌', sector: '科技', shares: 28000000, marketValue: 5040000000, ownershipPercent: 3.4, market: 'US', quarter: '2025Q4', changeShares: 1500000, changePercent: 5.7 },
+  { id: 54, institutionId: 11, stockTicker: 'SPY', stockName: '标普500ETF', sector: 'ETF', shares: 15000000, marketValue: 8100000000, ownershipPercent: 0.8, market: 'US', quarter: '2025Q4', changeShares: 2000000, changePercent: 3.2 },
+  { id: 55, institutionId: 11, stockTicker: 'QQQ', stockName: '纳指100ETF', sector: 'ETF', shares: 8000000, marketValue: 3280000000, ownershipPercent: 0.6, market: 'US', quarter: '2025Q4', changeShares: 500000, changePercent: 4.8 },
+  { id: 56, institutionId: 11, stockTicker: 'PFE', stockName: '辉瑞', sector: '医疗', shares: 35000000, marketValue: 910000000, ownershipPercent: 4.1, market: 'US', quarter: '2025Q4', changeShares: 1000000, changePercent: 2.9 },
+  { id: 57, institutionId: 11, stockTicker: 'JPM', stockName: '摩根大通', sector: '金融', shares: 22000000, marketValue: 5060000000, ownershipPercent: 1.8, market: 'US', quarter: '2025Q4', changeShares: 1000000, changePercent: 4.8 },
 ];
 
 export const alertRules: AlertRule[] = [
@@ -94,6 +108,9 @@ export const holdingChanges: HoldingChange[] = [
   { id: 13, institutionId: 4, stockTicker: 'NVDA', stockName: '英伟达', changeType: 'increase', changePercent: 47.1, previousShares: 17000000, currentShares: 25000000, quarter: '2025Q4' },
   { id: 14, institutionId: 4, stockTicker: 'UNH', stockName: '联合健康', changeType: 'decrease', changePercent: -14.3, previousShares: 14000000, currentShares: 12000000, quarter: '2025Q4' },
   { id: 15, institutionId: 8, stockTicker: 'JPM', stockName: '摩根大通', changeType: 'increase', changePercent: 8.7, previousShares: 23000000, currentShares: 25000000, quarter: '2025Q4' },
+  { id: 16, institutionId: 11, stockTicker: 'MSFT', stockName: '微软', changeType: 'increase', changePercent: 7.2, previousShares: 42000000, currentShares: 45000000, quarter: '2025Q4' },
+  { id: 17, institutionId: 11, stockTicker: 'BLK', stockName: '贝莱德', changeType: 'increase', changePercent: 12.5, previousShares: 4000000, currentShares: 4500000, quarter: '2025Q4' },
+  { id: 18, institutionId: 11, stockTicker: 'META', stockName: 'Meta', changeType: 'decrease', changePercent: -7.7, previousShares: 13000000, currentShares: 12000000, quarter: '2025Q4' },
 ];
 
 export function formatNumber(n: number): string {

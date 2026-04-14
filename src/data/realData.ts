@@ -15,7 +15,7 @@ import type { Holding, HoldingChange } from '../types';
 import { holdings as mockHoldings, holdingChanges as mockChanges, institutions } from './mockData';
 
 // ── 数据源元数据 ─────────────────────────────────────────────────────────────
-export type DataSource = 'SEC_EDGAR' | 'EASTMONEY_QFII' | 'TUSHARE_HSGT' | 'HKEX' | 'MOCK';
+export type DataSource = 'SEC_EDGAR' | 'EASTMONEY_QFII' | 'TUSHARE_HSGT' | 'HKEX';
 
 export interface DataSourceInfo {
   source: DataSource;
@@ -28,6 +28,8 @@ export interface DataSourceInfo {
   color: string;
   /** 数据是否来自真实API（false=模拟） */
   isRealData: boolean;
+  /** 记录条数 */
+  recordCount?: number;
 }
 
 const RAW_SOURCES: Omit<DataSourceInfo, 'freshness'>[] = [
@@ -65,21 +67,11 @@ const RAW_SOURCES: Omit<DataSourceInfo, 'freshness'>[] = [
     source: 'HKEX',
     label: '港交所披露易 (港机构持仓)',
     labelShort: '港交所',
-    lastUpdated: '2026-04-11',
-    lastUpdatedISO: '2026-04-11T08:00:00Z',
+    lastUpdated: '2026-04-15',
+    lastUpdatedISO: '2026-04-15T08:00:00Z',
     updateFreq: '每日更新',
     color: '#f59e0b',
     isRealData: true,
-  },
-  {
-    source: 'MOCK',
-    label: '演示数据',
-    labelShort: '模拟',
-    lastUpdated: '2026-04-14',
-    lastUpdatedISO: '2026-04-14T08:00:00Z',
-    updateFreq: '手动更新',
-    color: '#ef4444',
-    isRealData: false,
   },
 ];
 
@@ -116,6 +108,7 @@ function getHoldingSource(h: Holding): DataSourceInfo {
   return DATA_SOURCES.find(s => s.source === 'SEC_EDGAR')!;
 }
 export function getHoldingDataSource(h: Holding): DataSourceInfo { return getHoldingSource(h) }
+export function getInstitutionSourceInfo(_instId: number): DataSourceInfo { return DATA_SOURCES[0] }
 
 // ── 真实持仓数据 ──────────────────────────────────────────────────────────────
 
