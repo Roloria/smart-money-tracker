@@ -1,12 +1,10 @@
-// @ts-nocheck
 /**
  * SectorHeatmap — 持仓板块热力图
  * 以 Treemap 形式展示各板块持仓占比与涨跌情况
  */
 
 import { useMemo } from 'react';
-import { getAllHoldings } from '../data/realData';
-import { institutions } from '../data/mockData';
+import type { Holding } from '../types';
 
 const C = {
   card: '#141414', border: '#1e1e1e',
@@ -44,7 +42,7 @@ interface SectorNode {
   count: number;        // number of holdings
   pct: number;          // % of total portfolio
   color: string;
-  children?: SectorNode[];
+  children?: StockNode[];
 }
 
 interface StockNode {
@@ -56,7 +54,7 @@ interface StockNode {
   color: string;
 }
 
-export default function SectorHeatmap({ holdings }: { holdings: any[] }) {
+export default function SectorHeatmap({ holdings }: { holdings: Holding[] }) {
   const { sectors, total } = useMemo(() => {
     const map = new Map<string, { value: number; stocks: StockNode[] }>();
     let grand = 0;
@@ -92,7 +90,7 @@ export default function SectorHeatmap({ holdings }: { holdings: any[] }) {
         pct: grand > 0 ? (value / grand) * 100 : 0,
         color,
         children,
-      } as SectorNode;
+      };
     }).sort((a, b) => b.value - a.value);
 
     return { sectors: sectorList, total: grand };

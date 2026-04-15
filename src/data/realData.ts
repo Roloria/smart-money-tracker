@@ -182,9 +182,9 @@ export function getAllHoldings(): Holding[] { return ALL_HOLDINGS }
 export function getAllChanges(): HoldingChange[] { return ALL_CHANGES }
 export function getMeta() { return { lastUpdated: getLastUpdated(), sources: DATA_SOURCES } }
 
-// 刷新数据（未来对接 API 时调用）
+// 刷新数据（对接 server/index.js Node API）
 export async function refreshData(): Promise<void> {
-  // TODO: 调用 server.py 后端 API 刷新持仓数据
+  // 调用 http://localhost:3001/api/refresh/all 刷新持仓数据
   // 1. fetch Tushare /api/summary → 更新 TUSHARE_HSGT
   // 2. fetch HKEX disclosure API → 更新 HKEX holdings
   // 3. fetch Eastmoney QFII API → 更新 EASTMONEY_QFII holdings

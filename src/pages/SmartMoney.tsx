@@ -523,16 +523,25 @@ export default function SmartMoney() {
   const [ruleForm, setRuleForm] = useState({ ticker: '', threshold: 20, email: true, feishu: false })
   const [prices, setPrices] = useState<Map<string, StockPrice>>(new Map())
   const [pricesLoading, setPricesLoading] = useState(false)
+  const [pricesError, setPricesError] = useState(false)
+  const [lastPriceUpdate, setLastPriceUpdate] = useState<string>('—')
   const [showDataSourcePanel, setShowDataSourcePanel] = useState(false)
 
   // ── Fetch live stock prices ───────────────────────────────────────────────
-  useEffect(() => {
+  const refreshPrices = () => {
     const tickers = [...new Set(ALL_HOLDINGS.map(h => h.stockTicker))]
     setPricesLoading(true)
+    setPricesError(false)
     getStockPrices(tickers).then(result => {
       setPrices(result)
       setPricesLoading(false)
-    }).catch(() => setPricesLoading(false))
+      setPricesError(result.size === 0)
+      setLastPriceUpdate(new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }))
+    }).catch(() => { setPricesLoading(false); setPricesError(true) })
+  }
+
+  useEffect(() => {
+    refreshPrices()
   }, [])
 
   // ── Data status ─────────────────────────────────────────────────────────────
@@ -662,6 +671,34 @@ export default function SmartMoney() {
               <Database size={11} />
               数据源
             </button>
+            {pricesError && (
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 4,
+                padding: '3px 8px', borderRadius: 9999,
+                background: `${C.red}12`, border: `1px solid ${C.red}30`,
+                fontSize: 10, color: C.red,
+              }}>
+                <AlertTriangle size={10} />
+                价格已过期
+              </div>
+            )}
+            <button
+              onClick={refreshPrices}
+              title={`刷新价格 (上次: ${lastPriceUpdate})`}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 5,
+                padding: '4px 10px', borderRadius: 9999,
+                background: pricesLoading ? `${C.yellow}12` : pricesError ? `${C.red}12` : `${C.green}12`,
+                border: `1px solid ${pricesLoading ? C.yellow + '30' : pricesError ? C.red + '30' : C.green + '30'}`,
+                fontSize: 11, color: pricesLoading ? C.yellow : pricesError ? C.red : C.green,
+                cursor: pricesLoading ? 'not-allowed' : 'pointer',
+                fontWeight: 600,
+                transition: 'all 0.2s',
+              }}
+            >
+              <RefreshCw size={11} style={pricesLoading ? '{ animation: spin 1s linear infinite }' : ''} />
+              {pricesLoading ? '刷新中…' : pricesError ? '重试价格' : '刷新价格'}
+            </button>
           </div>
         </div>
         <div style={{ display: 'flex', padding: '0 24px', gap: 2 }}>
@@ -693,12 +730,27 @@ export default function SmartMoney() {
         {/* ══ OVERVIEW ═══════════════════════════════════════════════════════ */}
         {tab === 'overview' && (
           <div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 14 }}>
+            {(() => {
+              // Compute live portfolio total using real-time prices
+              const liveTotal = ALL_HOLDINGS.reduce((sum: number, h: Holding) => {
+                const price = prices.get(h.stockTicker)
+                if (price) {
+                  return sum + price.price * h.shares
+                }
+                return sum + h.marketValue
+              }, 0)
+              const liveCount = [...prices.values()].length
+              const totalTickers = [...new Set(ALL_HOLDINGS.map((h: Holding) => h.stockTicker))].length
+              return (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 14, marginBottom: 14 }}>
               <StatCard icon={Building2} label="覆盖机构" value={`${institutions.length}家`} sub="全球顶级主权 & 机构基金" color={C.blue} />
+              <StatCard icon={DollarSign} label="实时持仓总值" value={fmt$(liveTotal)} sub={liveCount > 0 ? `${liveCount}/${totalTickers}只已实时报价` : '加载中…'} color={C.green} />
               <StatCard icon={BarChart3} label="披露持仓市值" value={fmt$(stats.totalValue)} sub="2025 Q4 披露值" color={C.yellow} />
               <StatCard icon={TrendingUp} label="本季增持王" value={stats.topGainer.ticker} sub={`${stats.topGainer.institution} · ${pct(stats.topGainer.change)}`} color={C.green} />
               <StatCard icon={TrendingDown} label="本季减持王" value={stats.topLoser.ticker} sub={`${stats.topLoser.institution} · ${pct(stats.topLoser.change)}`} color={C.red} />
             </div>
+              )
+            })()}
 
             {/* 数据源状态概览 */}
             <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, padding: '14px 18px', marginBottom: 20 }}>
@@ -968,7 +1020,7 @@ export default function SmartMoney() {
               />
             </div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 28 }}>
-              {['AAPL', 'MSFT', 'NVDA', 'TSLA', 'META', 'GOOGL', 'AMZN', 'JPM', 'BRK.B', '0700.HK', '600519.SH', '601318.SH'].map(s => (
+              {['AAPL', 'MSFT', 'NVDA', 'TSLA', 'META', 'GOOGL', 'AMZN', 'JPM', 'BRK.B', '0700.HK', '600519', '601318'].map(s => (
                 <button
                   key={s}
                   onClick={() => setSearchQuery(s)}
