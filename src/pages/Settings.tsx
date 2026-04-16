@@ -71,10 +71,10 @@ export default function SettingsPage() {
           </div>
           <div style={{display:'flex',flexDirection:'column',gap:10}}>
             {[
-              {name:'SEC EDGAR 13F',desc:'美国证券交易委员会 - 机构持仓季度报告',avail:'✅ 已接入'},
-              {name:'Bloomberg Terminal',desc:'实时市场数据 + 机构持仓分析',avail:'✅ 已接入'},
-              {name:'Wind Financial Terminal',desc:'A股/港股持仓数据（真实数据）',avail:'✅ 部分接入'},
-              {name:'S&P Capital IQ',desc:'全球机构持仓分析',avail:'⚠️ 计划中'},
+              {name:'SEC EDGAR 13F',desc:'美国证券交易委员会 - 季度13F机构持仓报告',avail:'✅ 已接入'},
+              {name:'东方财富 QFII',desc:'A股外资持股数据（每日更新）',avail:'✅ 已接入'},
+              {name:'沪深港通 Tushare',desc:'北向资金实时持仓数据',avail:'✅ 已接入'},
+              {name:'HKEX 披露易',desc:'港交所机构持仓披露（每日更新）',avail:'✅ 已接入'},
             ].map(d => (
               <div key={d.name} style={{display:'flex',alignItems:'center',gap:12,padding:'10px 14px',background:'#0f0f0f',borderRadius:6}}>
                 <div style={{flex:1}}>
@@ -91,12 +91,12 @@ export default function SettingsPage() {
         <div className="card-base" style={{padding:24,marginBottom:20}}>
           <div style={{fontSize:14,fontWeight:600,color:'#fafafa',marginBottom:12}}>Smart Money Tracker</div>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,fontSize:12,color:'#71717a'}}>
-            <div><span style={{color:'#52525b'}}>当前版本：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>Phase 6</span></div>
+            <div><span style={{color:'#52525b'}}>当前版本：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>Phase 6 ✓</span></div>
             <div><span style={{color:'#52525b'}}>数据周期：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>2025 Q4</span></div>
-            <div><span style={{color:'#52525b'}}>追踪机构：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>10（美股）+ 真实港/A股</span></div>
+            <div><span style={{color:'#52525b'}}>追踪机构：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>12家全球机构</span></div>
             <div><span style={{color:'#52525b'}}>下一版本：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>Phase 7</span></div>
           </div>
-          <div style={{marginTop:10,fontSize:12,color:'#3f3f46',lineHeight:1.6}}>Phase 6：AI产业链追踪 + 小盘股信号 + SEC/HKEX/QFII真实数据标注。Phase 7计划：增减持排行榜 + 持仓重叠分析 + 板块热力图。</div>
+          <div style={{marginTop:10,fontSize:12,color:'#3f3f46',lineHeight:1.6}}>Phase 6 ✅：AI产业链 + 小盘股信号 + SEC/HKEX/QFII真实数据。Phase 7 计划：机构持仓预测模型 + 回测模块 + 预警推送增强。</div>
         </div>
 
         {/* Save */}

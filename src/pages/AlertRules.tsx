@@ -46,10 +46,22 @@ export default function AlertRules() {
     setRules(rules.filter(r => r.id !== id));
   };
 
+  // 预警股票池：Kevin 真实持仓 + 全球AI核心资产 + 主要科技巨头
   const availableStocks = [
-    {ticker:'NVDA',name:'英伟达'},{ticker:'AAPL',name:'苹果'},{ticker:'MSFT',name:'微软'},
-    {ticker:'TSLA',name:'特斯拉'},{ticker:'META',name:'Meta'},{ticker:'GOOGL',name:'谷歌'},
-    {ticker:'AMZN',name:'亚马逊'},{ticker:'JPM',name:'摩根大通'},
+    // Kevin 真实持仓
+    {ticker:'300866',name:'安克创新'},{ticker:'301498',name:'乖宝宠物'},
+    {ticker:'688110',name:'东芯股份'},{ticker:'9988.HK',name:'阿里巴巴'},
+    {ticker:'1810.HK',name:'小米集团'},{ticker:'002602',name:'世纪华通'},
+    // AI 核心资产
+    {ticker:'NVDA',name:'英伟达'},{ticker:'AVGO',name:'博通'},
+    {ticker:'TSM',name:'台积电'},{ticker:'ASML',name:'ASML'},
+    {ticker:'MSFT',name:'微软'},{ticker:'GOOGL',name:'谷歌'},
+    {ticker:'META',name:'Meta'},{ticker:'AMZN',name:'亚马逊'},
+    {ticker:'CRM',name:'Salesforce'},{ticker:'ORCL',name:'甲骨文'},
+    // 科技/金融
+    {ticker:'AAPL',name:'苹果'},{ticker:'TSLA',name:'特斯拉'},
+    {ticker:'JPM',name:'摩根大通'},{ticker:'BAC',name:'美国银行'},
+    {ticker:'0700.HK',name:'腾讯控股'},{ticker:'3690.HK',name:'美团'},
   ].filter(s => !stockQuery || s.ticker.toLowerCase().includes(stockQuery.toLowerCase()) || s.name.includes(stockQuery));
 
   return (
