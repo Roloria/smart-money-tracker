@@ -6,7 +6,6 @@ import {
   Plus, Trash2, ExternalLink, Wallet, PieChart as PieIcon, RefreshCw, DollarSign, Clock, Brain, Star, Cpu, Database, Loader2
 } from 'lucide-react'
 import AIChainPanel from './AIChainPanel'
-import AIChainPage from './AIChainPage'
 import InstitutionDetailPage from './InstitutionDetailPage'
 
 // Lazy-load heavy components to reduce initial bundle size
@@ -1208,7 +1207,6 @@ export default function SmartMoney() {
 
         {/* ══ SETTINGS ═══════════════════════════════════════════════════════ */}
         {tab === 'ai' && <AIChainPanel />}
-        {tab === 'ai' && <AIChainPage />}
         {tab === 'rankings' && <Suspense fallback={<LazyLoader />}><InstitutionRankings /></Suspense>}
         {tab === 'overlap' && <Suspense fallback={<LazyLoader />}><InstitutionOverlap /></Suspense>}
         {tab === 'mine' && <Suspense fallback={<LazyLoader />}><KevinPortfolio /></Suspense>}
