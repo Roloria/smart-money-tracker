@@ -4,6 +4,7 @@ import { TrendingUp, TrendingDown, Building2, DollarSign, Activity, ArrowUpRight
 import { institutions, holdings, holdingChanges, formatNumber, formatPercent, typeLabels, typeColors } from '../data/mockData';
 
 export default function Dashboard() {
+  const instCount = institutions.length;                              // 动态计算，避免硬编码
   const totalValue = institutions.reduce((sum, i) => sum + i.totalValue, 0);
   const totalIncreases = holdings.filter(h => h.changePercent > 0).length;
   const totalDecreases = holdings.filter(h => h.changePercent < 0).length;
@@ -29,7 +30,7 @@ export default function Dashboard() {
             </div>
             <span style={{ fontSize: 12, color: '#71717a', fontWeight: 500 }}>追踪机构</span>
           </div>
-          <div style={{ fontSize: 28, fontWeight: 700, fontFamily: 'JetBrains Mono, monospace', color: '#fafafa' }}>10</div>
+          <div style={{ fontSize: 28, fontWeight: 700, fontFamily: 'JetBrains Mono, monospace', color: '#fafafa' }}>{instCount}</div>
           <div style={{ fontSize: 12, color: '#52525b', marginTop: 4 }}>全球顶级机构</div>
         </div>
         <div className="stat-card">
