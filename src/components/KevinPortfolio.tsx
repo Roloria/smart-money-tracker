@@ -38,10 +38,12 @@ const TOTAL_CAPITAL = 600000;   // 60万总资金
 const INVESTED_RATIO = 0.70;    // 70%仓位
 const INVESTED_CAPITAL = TOTAL_CAPITAL * INVESTED_RATIO; // 42万
 
-// Kevin 真实持仓（来源：MEMORY.md Investment Portfolio）
+// Kevin 真实持仓（来源：MEMORY.md + Signal Arena 建仓记录 2026-04-12）
 // 分配：安克创新40%·乖宝宠物10%·东芯股份10%·阿里巴巴5%·小米5%·世纪华通5% = 75% ≈ 70%
+// 注意：shares/cost 为 null 的标的，P&L 将显示"—"
+
 const KEVIN_HOLDINGS: Holding[] = [
-  { ticker: '300866', name: '安克创新', market: 'CN', shares: 800,  cost: 116.25, sector: '消费电子/出海',  allocation: 0.40 },
+  { ticker: '300866', name: '安克创新', market: 'CN', shares: 800,  cost: 116.25, sector: '消费电子/出海',  allocation: 0.40 }, // 来自 Signal Arena
   { ticker: '301498', name: '乖宝宠物', market: 'CN', shares: null, cost: null,  sector: '宠物经济',       allocation: 0.10 },
   { ticker: '688110', name: '东芯股份', market: 'CN', shares: null, cost: null,  sector: 'AI存储芯片',     allocation: 0.10 },
   { ticker: '9988.HK', name: '阿里巴巴', market: 'HK', shares: null, cost: null,  sector: '电商/AI',        allocation: 0.05 },
