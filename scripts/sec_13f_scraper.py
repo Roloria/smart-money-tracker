@@ -25,7 +25,7 @@ INSTITUTIONS = {
     "BlackRock": "0001364742",
     "Fidelity Investments": "0000711642",
     "Neuberger Berman": "0000032023",
-    "AllianceBernstein": "000110elligent108",
+    "AllianceBernstein": "000110108",
     "ADIA (Abu Dhabi IA)": "0001623440",
     "KIA (Kuwait IA)": "0001474042",
 }

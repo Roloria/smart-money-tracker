@@ -183,10 +183,15 @@ export function getAllChanges(): HoldingChange[] { return ALL_CHANGES }
 export function getMeta() { return { lastUpdated: getLastUpdated(), sources: DATA_SOURCES } }
 
 // 刷新数据（对接 server/index.js Node API）
-export async function refreshData(): Promise<void> {
-  // 调用 http://localhost:3001/api/refresh/all 刷新持仓数据
-  // 1. fetch Tushare /api/summary → 更新 TUSHARE_HSGT
-  // 2. fetch HKEX disclosure API → 更新 HKEX holdings
-  // 3. fetch Eastmoney QFII API → 更新 EASTMONEY_QFII holdings
-  console.log('[realData] refreshData() called — backend not yet deployed');
+export async function refreshData(): Promise<{ success: boolean; message: string }> {
+  const BASE = import.meta.env.DEV ? 'http://localhost:3001' : '';
+  try {
+    const res = await fetch(`${BASE}/api/refresh/all`, { method: 'POST' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    return { success: true, message: `刷新完成` };
+  } catch (err: unknown) {
+    // Backend not deployed — silent fallback, data served from static files
+    return { success: false, message: (err as Error).message || '刷新不可用' };
+  }
 }

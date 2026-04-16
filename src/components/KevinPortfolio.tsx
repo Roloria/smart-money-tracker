@@ -71,8 +71,8 @@ async function fetchPrice(ticker: string, market: string): Promise<Omit<PriceDat
     const data = await resp.json();
     const result = data?.chart?.result?.[0];
     if (!result) throw new Error('No data');
-    const closes = result.indicators?.quote?.[0]?.close;
-    if (!closes || closes.length < 2) throw new Error('No close prices');
+    const closes = (result.indicators?.quote?.[0]?.close ?? []).filter((c: number) => c != null);
+    if (closes.length < 2) throw new Error('No close prices');
     const curr = closes[closes.length - 1];
     const prev = closes[closes.length - 2];
     const currencyMap: Record<string, string> = { CN: 'CNY', HK: 'HKD', US: 'USD' };
@@ -253,6 +253,7 @@ export default function KevinPortfolio() {
           const price = priceData?.price ?? 0;
           const changePct = priceData?.changePct ?? 0;
           const currency = priceData?.currency ?? (holding.market === 'CN' ? 'CNY' : 'HKD');
+          const hasError = !!priceData?.error;
 
           const positionValue = (() => {
             if (price > 0 && holding.shares) {
@@ -263,6 +264,7 @@ export default function KevinPortfolio() {
 
           const marketLabel = holding.market === 'CN' ? '🇨🇳 A股' : '🇭🇰 港股';
           const weight = holding.allocation * 100;
+          const isRowError = hasError || (priceData && !priceData.loading && price === 0);
 
           return (
             <div key={holding.ticker} style={{
@@ -271,12 +273,12 @@ export default function KevinPortfolio() {
               gap: 8, padding: '12px 16px',
               alignItems: 'center',
               borderBottom: idx < KEVIN_HOLDINGS.length - 1 ? `1px solid ${C.border}` : 'none',
-              background: idx % 2 === 0 ? 'transparent' : '#0d0d0d20',
+              background: isRowError ? '#2d0a0a' : idx % 2 === 0 ? 'transparent' : '#0d0d0d20',
             }}>
               {/* Stock */}
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 13, fontWeight: 800, color: C.text, fontFamily: 'JetBrains Mono, monospace' }}>
+                  <span style={{ fontSize: 13, fontWeight: 800, color: isRowError ? C.red : C.text, fontFamily: 'JetBrains Mono, monospace' }}>
                     {holding.ticker}
                   </span>
                   <span style={{ fontSize: 12, color: C.text2 }}>{holding.name}</span>
@@ -292,23 +294,25 @@ export default function KevinPortfolio() {
 
               {/* Cost per share */}
               <div style={{ textAlign: 'right', fontSize: 12, color: C.text3, fontFamily: 'JetBrains Mono, monospace' }}>
-                {holding.cost ? `¥${holding.cost}` : '—'}
+                {holding.cost ? `¥${holding.cost.toFixed(2)}` : '—'}
               </div>
 
               {/* Current price */}
-              <div style={{ textAlign: 'right', fontSize: 12, fontWeight: 700, color: C.text, fontFamily: 'JetBrains Mono, monospace' }}>
+              <div style={{ textAlign: 'right', fontSize: 12, fontWeight: 700, color: isRowError ? C.red : C.text, fontFamily: 'JetBrains Mono, monospace' }}>
                 {isLoading ? (
                   <Loader2 size={12} style={{ animation: 'spin 1s linear infinite', display: 'inline' }} />
-                ) : priceData?.error ? (
-                  <span style={{ fontSize: 10, color: C.red }}>失败</span>
-                ) : (
+                ) : hasError ? (
+                  <span style={{ fontSize: 10, color: C.red }} title={priceData?.error}>⚠</span>
+                ) : price > 0 ? (
                   `${currency === 'CNY' ? '¥' : 'HK$'}${price.toFixed(2)}`
+                ) : (
+                  <span style={{ fontSize: 11, color: C.text3 }}>—</span>
                 )}
               </div>
 
               {/* Day change */}
               <div style={{ textAlign: 'right', fontSize: 11, fontWeight: 700, color: changePct >= 0 ? C.green : C.red, fontFamily: 'JetBrains Mono, monospace' }}>
-                {isLoading || priceData?.error ? '—' : (
+                {isLoading || hasError || price === 0 ? '—' : (
                   <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 2 }}>
                     {changePct >= 0 ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
                     {changePct >= 0 ? '+' : ''}{changePct.toFixed(2)}%
@@ -328,10 +332,10 @@ export default function KevinPortfolio() {
                     <div style={{
                       height: '100%', borderRadius: 3,
                       width: `${weight}%`,
-                      background: `linear-gradient(90deg, ${C.blue}, ${C.purple})`,
+                      background: isRowError ? C.red : `linear-gradient(90deg, ${C.blue}, ${C.purple})`,
                     }} />
                   </div>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: C.text3, width: 36, textAlign: 'right' }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: isRowError ? C.red : C.text3, width: 36, textAlign: 'right' }}>
                     {weight}%
                   </span>
                 </div>
