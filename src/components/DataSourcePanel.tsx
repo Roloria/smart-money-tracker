@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * DataSourcePanel — 数据源管理面板
  * 显示所有已接入数据源，支持查看详情和手动刷新

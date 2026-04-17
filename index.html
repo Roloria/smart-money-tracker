@@ -6,6 +6,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="聪明钱去了哪儿 — 追踪全球顶级主权基金与对冲机构的真实持仓，监控美股/港股/A股聪明钱流向" />
     <title>聪明钱去了哪儿 | Smart Money Tracker</title>
+    <style>
+      /* ── Mobile Responsive Overrides ─────────────────────────────────── */
+      @media (max-width: 768px) {
+        /* Stack stat cards 2-column */
+        [data-stat-grid] {
+          grid-template-columns: repeat(2, 1fr) !important;
+        }
+        /* AI layer strip: 2-column */
+        [data-ai-strip] {
+          grid-template-columns: repeat(2, 1fr) !important;
+        }
+        /* Small-cap cards: 2-column */
+        [data-smallcap-grid] {
+          grid-template-columns: repeat(2, 1fr) !important;
+        }
+        /* Main content: full width */
+        main > div[style*="grid"] {
+          grid-template-columns: 1fr !important;
+        }
+      }
+      @media (max-width: 480px) {
+        /* Stat cards: 1-column on very small screens */
+        [data-stat-grid] {
+          grid-template-columns: 1fr !important;
+        }
+        /* AI layers: 1-column */
+        [data-ai-strip] {
+          grid-template-columns: 1fr !important;
+        }
+        /* Small-cap: 1-column */
+        [data-smallcap-grid] {
+          grid-template-columns: 1fr !important;
+        }
+        /* Header: hide institution ticker row */
+        header > div[style*="linear-gradient"] > div:last-child {
+          display: none !important;
+        }
+        /* Hide market filter buttons on very small */
+        [data-market-filters] {
+          display: none !important;
+        }
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>

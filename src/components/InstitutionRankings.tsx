@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * InstitutionRankings — 机构增减持排行榜
  * 按季度/月度展示各机构增持/减持排行

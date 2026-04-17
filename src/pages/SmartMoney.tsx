@@ -36,7 +36,7 @@ import {
 } from '../data/realData'
 import AIFlowPage from './AIFlowPage'
 import SmallCapPage from './SmallCapPage'
-import { getAIChainSummary, getSmallCapSignals, AI_LAYERS } from '../data/aiChain'
+import { getAIChainSummary, getSmallCapSignals, AI_LAYERS, getLayerStatsFromHoldings, SMALL_CAP_TRACKED } from '../data/aiChain'
 import type { Institution, Holding, AlertRule, HoldingChange } from '../types'
 
 // Use combined data: mock (US) + HK/CN from realData
@@ -73,7 +73,17 @@ const fmtN = (v: number) => {
   return `${v}`
 }
 const pct = (v: number) => `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`
-const fmtDate = () => '2025 Q4'
+const fmtDate = () => {
+  // 13F filings are delayed ~45 days after quarter end
+  // In April 2026, latest filed = Q4 2025 (Oct-Dec)
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = now.getMonth() // 0-indexed
+  // If before May, Q4 last year is latest; otherwise Q1 this year is latest
+  if (month <= 4) return `${year - 1} Q4`
+  if (month <= 7) return `${year} Q1`
+  return `${year} Q2`
+}
 
 // ── Pill ───────────────────────────────────────────────────────────────────────
 function Pill({ value }: { value: number }) {
@@ -695,7 +705,7 @@ export default function SmartMoney() {
                 transition: 'all 0.2s',
               }}
             >
-              <RefreshCw size={11} style={pricesLoading ? '{ animation: spin 1s linear infinite }' : ''} />
+              <RefreshCw size={11} style={pricesLoading ? { animation: 'spin 1s linear infinite' } : {}} />
               {pricesLoading ? '刷新中…' : pricesError ? '重试价格' : '刷新价格'}
             </button>
           </div>
@@ -741,7 +751,7 @@ export default function SmartMoney() {
               const liveCount = [...prices.values()].length
               const totalTickers = [...new Set(ALL_HOLDINGS.map((h: Holding) => h.stockTicker))].length
               return (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 14, marginBottom: 14 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 14, marginBottom: 14 }} data-stat-grid>
               <StatCard icon={Building2} label="覆盖机构" value={`${institutions.length}家`} sub="全球顶级主权 & 机构基金" color={C.blue} />
               <StatCard icon={DollarSign} label="实时持仓总值" value={fmt$(liveTotal)} sub={liveCount > 0 ? `${liveCount}/${totalTickers}只已实时报价` : '加载中…'} color={C.green} />
               <StatCard icon={BarChart3} label="披露持仓市值" value={fmt$(stats.totalValue)} sub="2025 Q4 披露值" color={C.yellow} />
@@ -790,34 +800,36 @@ export default function SmartMoney() {
                 <span style={{ fontSize: 11, color: C.text3, marginLeft: 'auto' }}>鼠标悬停查看详情</span>
               </div>
 
-              {/* AI Layer Strip */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10, marginBottom: 12 }}>
-                {[
-                  { layer: 'AI芯片/算力', color: '#f59e0b', icon: '🟠', stocks: 'NVDA AMD TSM AMAT', change: '+18.2%', key: 'chip' },
-                  { layer: 'AI云/基础设施', color: '#38bdf8', icon: '🔵', stocks: 'MSFT GOOGL AMZN', change: '+12.4%', key: 'cloud' },
-                  { layer: 'AI应用层', color: '#22c55e', icon: '🟢', stocks: 'SNOW NET DDOG', change: '+24.6%', key: 'app' },
-                  { layer: 'AI终端/机器人', color: '#a78bfa', icon: '🟣', stocks: 'TSLA HON ISRG', change: '+8.1%', key: 'robot' },
-                  { layer: '中国AI', color: '#f43f5e', icon: '🔴', stocks: '海康 东芯 安克 小米', change: '+15.3%', key: 'china' },
-                ].map(item => (
-                  <div key={item.key} style={{
-                    background: C.card, border: `1px solid ${C.border}`, borderRadius: 10,
-                    padding: '12px 14px', cursor: 'pointer',
-                    transition: 'all 0.15s',
-                  }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = item.color + '50'; e.currentTarget.style.background = item.color + '08'; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.background = C.card; }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                      <span style={{ fontSize: 14 }}>{item.icon}</span>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: item.color }}>{item.layer}</span>
+              {/* AI Layer Strip — 来自真实机构持仓数据 */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10, marginBottom: 12 }} data-ai-strip>
+                {AI_LAYERS.map(layer => {
+                  const stats = getLayerStatsFromHoldings(layer.layer)
+                  const change = stats.avgChange
+                  const changeColor = change >= 0 ? C.green : C.red
+                  const changeLabel = change >= 0 ? `+${change.toFixed(1)}%` : `${change.toFixed(1)}%`
+                  return (
+                    <div key={layer.layer} style={{
+                      background: C.card, border: `1px solid ${C.border}`, borderRadius: 10,
+                      padding: '12px 14px', cursor: 'pointer',
+                      transition: 'all 0.15s',
+                    }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = layer.color + '50'; e.currentTarget.style.background = layer.color + '08'; }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.background = C.card; }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                        <span style={{ fontSize: 14 }}>{layer.layer === 'chip' ? '🟠' : layer.layer === 'cloud' ? '🔵' : layer.layer === 'app' ? '🟢' : layer.layer === 'robot' ? '🟣' : '🔴'}</span>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: layer.color }}>{layer.labelShort}</span>
+                      </div>
+                      <div style={{ fontSize: 10, color: C.text3, marginBottom: 6, fontFamily: 'JetBrains Mono, monospace' }}>
+                        {stats.topTickers.length > 0 ? stats.topTickers.join(' ') : layer.keywords.slice(0, 4).join(' ')}
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: changeColor, fontFamily: 'JetBrains Mono, monospace' }}>{changeLabel}</span>
+                        <span style={{ fontSize: 9, color: C.text3 }}>{stats.instCount}家机构</span>
+                      </div>
                     </div>
-                    <div style={{ fontSize: 10, color: C.text3, marginBottom: 6, fontFamily: 'JetBrains Mono, monospace' }}>{item.stocks}</div>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: C.green, fontFamily: 'JetBrains Mono, monospace' }}>{item.change}</span>
-                      <span style={{ fontSize: 9, color: C.text3 }}>机构持仓</span>
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
 
               {/* 小盘股建仓信号 */}
@@ -835,31 +847,35 @@ export default function SmartMoney() {
                     ))}
                   </span>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10 }}>
-                  {[
-                    { ticker: '300866', name: '安克创新', market: 'CN', signal: '📈', signalColor: C.green, change: '+22.1%', inst: '3家机构', note: 'AI智能硬件出海' },
-                    { ticker: '688110', name: '东芯股份', market: 'CN', signal: '🆕', signalColor: C.red, change: '新建仓', inst: '1家机构', note: 'AI存储芯片' },
-                    { ticker: '002415', name: '海康威视', market: 'CN', signal: '📈', signalColor: C.green, change: '+15.8%', inst: '2家机构', note: 'AI安防龙头' },
-                    { ticker: '1810.HK', name: '小米集团', market: 'HK', signal: '📈', signalColor: C.green, change: '+13.7%', inst: '2家机构', note: 'AI+智能硬件' },
-                    { ticker: '6690.HK', name: '海尔智家', market: 'HK', signal: '⚡', signalColor: C.yellow, change: '+3.7%', inst: '1家机构', note: '智能家居' },
-                  ].map(stock => (
-                    <div key={stock.ticker} style={{
-                      background: '#0d0d0d', border: `1px solid ${C.border}`, borderRadius: 8,
-                      padding: '10px 12px', cursor: 'pointer', transition: 'all 0.15s',
-                    }}
-                      onMouseEnter={e => e.currentTarget.style.borderColor = stock.signalColor + '40'}
-                      onMouseLeave={e => e.currentTarget.style.borderColor = C.border}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                        <span style={{ fontSize: 12, fontWeight: 800, color: C.text, fontFamily: 'JetBrains Mono, monospace' }}>{stock.ticker}</span>
-                        <span style={{ fontSize: 13 }}>{stock.signal}</span>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10 }} data-smallcap-grid>
+                  {SMALL_CAP_TRACKED.map(meta => {
+                    const tickerHoldings = ALL_HOLDINGS.filter(h => h.stockTicker === meta.ticker)
+                    const instCount = tickerHoldings.length
+                    const avgChange = instCount > 0
+                      ? tickerHoldings.reduce((s, h) => s + h.changePercent, 0) / instCount
+                      : 0
+                    const signal = meta.isNewPosition ? '🆕' : meta.instAccumulating ? '📈' : '⚡'
+                    const signalColor = meta.isNewPosition ? C.red : meta.instAccumulating ? C.green : C.yellow
+                    const changeLabel = avgChange >= 0 ? `+${avgChange.toFixed(1)}%` : `${avgChange.toFixed(1)}%`
+                    return (
+                      <div key={meta.ticker} style={{
+                        background: '#0d0d0d', border: `1px solid ${C.border}`, borderRadius: 8,
+                        padding: '10px 12px', cursor: 'pointer', transition: 'all 0.15s',
+                      }}
+                        onMouseEnter={e => e.currentTarget.style.borderColor = signalColor + '40'}
+                        onMouseLeave={e => e.currentTarget.style.borderColor = C.border}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                          <span style={{ fontSize: 12, fontWeight: 800, color: C.text, fontFamily: 'JetBrains Mono, monospace' }}>{meta.ticker}</span>
+                          <span style={{ fontSize: 13 }}>{signal}</span>
+                        </div>
+                        <div style={{ fontSize: 10, color: C.text3, marginBottom: 2 }}>{meta.name}</div>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: signalColor, fontFamily: 'JetBrains Mono, monospace', marginBottom: 2 }}>{changeLabel}</div>
+                        <div style={{ fontSize: 9, color: C.text3 }}>{instCount > 0 ? `${instCount}家机构` : '暂无机构持仓'}</div>
+                        <div style={{ fontSize: 9, color: C.text3, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{meta.notes}</div>
                       </div>
-                      <div style={{ fontSize: 10, color: C.text3, marginBottom: 2 }}>{stock.name}</div>
-                      <div style={{ fontSize: 10, fontWeight: 700, color: stock.signalColor, fontFamily: 'JetBrains Mono, monospace', marginBottom: 2 }}>{stock.change}</div>
-                      <div style={{ fontSize: 9, color: C.text3 }}>{stock.inst}</div>
-                      <div style={{ fontSize: 9, color: C.text3, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{stock.note}</div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
             </div>
@@ -874,8 +890,18 @@ export default function SmartMoney() {
               }}>
                 <AlertTriangle size={13} />仅显示大幅异动（≥20%）
               </button>
+              {(marketFilter !== 'ALL' || alertOnly) && (
+                <button onClick={() => { setMarketFilter('ALL'); setAlertOnly(false) }} style={{
+                  display: 'flex', alignItems: 'center', gap: 4,
+                  padding: '5px 12px', borderRadius: 8,
+                  background: `${C.red}10`, border: `1px solid ${C.red}30`,
+                  color: C.red, fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                }}>
+                  重置筛选
+                </button>
+              )}
               <div style={{ marginLeft: 'auto', fontSize: 12, color: C.text3, fontFamily: 'JetBrains Mono, monospace' }}>
-                {filteredHoldings.length} 条记录
+                {filteredHoldings.length}/{ALL_HOLDINGS.length} 条记录
               </div>
             </div>
 
@@ -998,7 +1024,7 @@ export default function SmartMoney() {
           </div>
         )}
 
-        {/* ══ SEARCH{/* ══ SEARCH ══════════════════════════════════════════════════════ */}
+        {/* ══ SEARCH ══════════════════════════════════════════════════════ */}
         {tab === 'search' && (
           <div>
             <div style={{ marginBottom: 24 }}>

@@ -6,12 +6,19 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   build: {
+    chunkSizeWarningLimit: 10000,
     rollupOptions: {
       output: {
-        // Force all modules into a single JS file (no code splitting)
-        manualChunks: () => 'vendor',
+        manualChunks(id) {
+          // Split vendor libs into separate chunks for better caching
+          if (id.includes('node_modules')) {
+            if (id.includes('recharts')) return 'recharts'
+            if (id.includes('lucide-react')) return 'icons'
+            if (id.includes('zustand') || id.includes('jotai') || id.includes('valtio')) return 'state'
+            return 'vendor'
+          }
+        },
       },
     },
-    chunkSizeWarningLimit: 10000,
   },
 })

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * InstitutionOverlap — 机构持仓重叠分析
  * 识别哪些股票被多家机构共同持有，发现资金合力方向

@@ -100,6 +100,21 @@ export function getAILayerHoldings(layer: AILayer): (Holding & { aiLayer: AILaye
     .map(h => ({ ...h, aiLayer: layerInfo }));
 }
 
+// ── AI Layer 动态汇总（来自真实机构持仓）────────────────────────────────────
+export function getLayerStatsFromHoldings(layer: AILayer): {
+  totalValue: number; instCount: number; avgChange: number; topTickers: string[]
+} {
+  const holdings = getAILayerHoldings(layer);
+  if (holdings.length === 0) return { totalValue: 0, instCount: 0, avgChange: 0, topTickers: [] };
+  const totalValue = holdings.reduce((s, h) => s + h.marketValue, 0);
+  const avgChange = holdings.reduce((s, h) => s + h.changePercent, 0) / holdings.length;
+  const topTickers = [...holdings]
+    .sort((a, b) => b.marketValue - a.marketValue)
+    .slice(0, 4)
+    .map(h => h.stockTicker);
+  return { totalValue, instCount: holdings.length, avgChange, topTickers };
+}
+
 // ── 所有 AI 产业链汇总 ───────────────────────────────────────────────────────
 export interface AIStockSummary {
   ticker: string;

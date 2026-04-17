@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * AIChainPanel — AI产业链 & 小盘股 追踪面板
  * Phase 6: 细拆 AI 产业链各层 + 小盘股建仓监测
@@ -199,8 +198,8 @@ function LayerBarChart({ stats }: { stats: LayerStats[] }) {
         <YAxis tick={{ fill: '#64748b', fontSize: 10, fontFamily: 'JetBrains Mono' }} tickFormatter={v => `$${v}B`} />
         <Tooltip
           contentStyle={{ background: '#13141f', border: '1px solid #1e2030', borderRadius: 8, fontSize: 12 }}
-          formatter={(val: any, name: string, props: any) => [`$${Number(val).toFixed(1)}B`, '总市值']}
-          labelFormatter={(label: string, payload: any[]) => payload?.[0]?.payload?.name || label}
+          formatter={(val: any) => [`$${Number(val).toFixed(1)}B`, '总市值']}
+          labelFormatter={(label: any) => label}
         />
         <Bar dataKey="value" radius={[4, 4, 0, 0]}>
           {data.map((entry: any, i: number) => <Cell key={i} fill={entry.color} />)}

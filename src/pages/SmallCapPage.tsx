@@ -141,8 +141,8 @@ function StockDetailPanel({ ticker }: { ticker: string }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
               <span style={{ fontSize: 22, fontWeight: 900, fontFamily: 'JetBrains Mono, monospace', color: C.text }}>{ticker}</span>
               <span style={{ fontSize: 15, color: C.text3 }}>{meta?.name || holdings[0].stockName}</span>
-              <span style={{ padding: '2px 8px', borderRadius: 6, fontSize: 11, fontWeight: 700, background: `${marketColor}15`, color: marketColor }}>
-                {{ US: '🇺🇸US', HK: '🇭🇰HK', CN: '🇨🇳A股' }[(holdings[0] as any).market] || (holdings[0] as any).market}
+              <span style={{ padding: '2px 8px', borderRadius: 6, fontSize: 11, fontWeight: 700, color: marketColor }}>
+                {String(holdings[0].market)}
               </span>
               <SourceTag source={(holdings[0] as any)._dataSource || 'MOCK'} />
             </div>

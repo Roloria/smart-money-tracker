@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * AIFlowPage — AI产业链追踪详情页
  * Phase 6: 每个产业链模块的机构持仓、异动统计、二跳详情
@@ -7,7 +6,7 @@ import { useState } from 'react';
 import { Cpu, Cloud, AppWindow, Bot, Flag, TrendingUp, TrendingDown, ChevronRight, Building2, ExternalLink } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { getAIChainSummary, getLayerStats, AI_LAYERS, type AILayer } from '../data/aiChain';
-import { getAllHoldings, getAllChanges, getDataSources } from '../data/realData';
+import { getAllHoldings, getAllChanges, getDataSources, getDataSourceLabel } from '../data/realData';
 import type { Holding } from '../types';
 
 const C = {
@@ -273,7 +272,7 @@ export default function AIFlowPage() {
 
       {/* 数据来源条 */}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20, padding: '10px 14px', background: C.card, borderRadius: 10, border: `1px solid ${C.border}` }}>
-        {sources.filter(s => s.source !== 'MOCK').map(s => (
+        {sources.map(s => (
           <div key={s.source} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '3px 10px', borderRadius: 6, background: `${s.color}12`, border: `1px solid ${s.color}25`, fontSize: 11 }}>
             <div style={{ width: 6, height: 6, borderRadius: '50%', background: s.freshness === 'live' ? C.green : s.freshness === 'recent' ? C.yellow : C.text3 }} />
             <span style={{ fontWeight: 700, color: s.color }}>{s.labelShort}</span>

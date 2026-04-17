@@ -2,7 +2,7 @@
 
 > 追踪全球顶级主权基金与对冲机构的真实持仓，让散户也能跟踪"聪明钱"的流向
 
-**线上地址：** https://br3535bvxmh0.space.minimaxi.com
+**线上地址：** https://lkr23leyg4y0.space.minimaxi.com
 
 [![React](https://img.shields.io/badge/React-19.2-61DAFB?logo=react)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?logo=typescript)](https://www.typescriptlang.org)
@@ -41,9 +41,9 @@
 - 展示机构持仓明细与季度变化
 
 ### 7. 💼 Kevin 个人持仓追踪
-- 真实持仓（安克创新、乖宝宠物、东芯股份、阿里巴巴、小米、世纪华通）
+- 真实持仓（小米集团 39.1%、安克创新 24.6%、腾讯控股 13.0%、美团 11.6%、泡泡玛特 11.6%、现金 4%）
 - 实时行情价格（Yahoo Finance）+ 今日涨跌
-- 仓位权重可视化（占总资金70%）
+- 仓位权重可视化（占总资金60万）
 
 ### 8. 🔔 预警规则
 - 可视化配置股票异动预警（阈值设定）
@@ -185,7 +185,7 @@ smart-money-tracker/
 - [ ] 飞书/Email 预警通知（后端对接）
 - [ ] 持仓历史趋势图
 - [ ] 机构持仓历史走势
-- [ ] 移动端适配
+- [x] 移动端适配
 - [ ] 公开分享链接
 
 ---

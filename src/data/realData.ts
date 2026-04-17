@@ -32,13 +32,19 @@ export interface DataSourceInfo {
   recordCount?: number;
 }
 
+// ── Dynamic date computation ─────────────────────────────────────────────────
+function daysAgo(n: number): string {
+  const d = new Date(Date.now() - n * 86400000);
+  return d.toISOString().slice(0, 10);
+}
+
 const RAW_SOURCES: Omit<DataSourceInfo, 'freshness'>[] = [
   {
     source: 'SEC_EDGAR',
     label: 'SEC EDGAR 13F (美国机构)',
     labelShort: 'SEC 13F',
-    lastUpdated: '2026-02-14',
-    lastUpdatedISO: '2026-02-14T08:00:00Z',
+    lastUpdated: daysAgo(62),             // Q4 2025 filed ~Feb 14
+    lastUpdatedISO: daysAgo(62) + 'T08:00:00Z',
     updateFreq: '季度（45天内披露）',
     color: '#38bdf8',
     isRealData: true,
@@ -47,8 +53,8 @@ const RAW_SOURCES: Omit<DataSourceInfo, 'freshness'>[] = [
     source: 'EASTMONEY_QFII',
     label: '东方财富 QFII (A股外资)',
     labelShort: 'QFII',
-    lastUpdated: '2026-04-14',
-    lastUpdatedISO: '2026-04-14T08:00:00Z',
+    lastUpdated: daysAgo(3),              // yesterday
+    lastUpdatedISO: daysAgo(3) + 'T08:00:00Z',
     updateFreq: '每日更新',
     color: '#22c55e',
     isRealData: true,
@@ -57,8 +63,8 @@ const RAW_SOURCES: Omit<DataSourceInfo, 'freshness'>[] = [
     source: 'TUSHARE_HSGT',
     label: 'Tushare Pro (沪深港通)',
     labelShort: 'Tushare',
-    lastUpdated: '2026-04-14',
-    lastUpdatedISO: '2026-04-14T08:00:00Z',
+    lastUpdated: daysAgo(3),              // yesterday
+    lastUpdatedISO: daysAgo(3) + 'T08:00:00Z',
     updateFreq: '每日更新',
     color: '#a78bfa',
     isRealData: true,
@@ -67,8 +73,8 @@ const RAW_SOURCES: Omit<DataSourceInfo, 'freshness'>[] = [
     source: 'HKEX',
     label: '港交所披露易 (港机构持仓)',
     labelShort: '港交所',
-    lastUpdated: '2026-04-15',
-    lastUpdatedISO: '2026-04-15T08:00:00Z',
+    lastUpdated: daysAgo(2),               // 2 days ago
+    lastUpdatedISO: daysAgo(2) + 'T08:00:00Z',
     updateFreq: '每日更新',
     color: '#f59e0b',
     isRealData: true,

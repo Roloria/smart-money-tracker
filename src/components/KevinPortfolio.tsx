@@ -1,7 +1,8 @@
 /**
  * KevinPortfolio — Kevin 真实持仓追踪
  * 显示 Kevin 个人持仓与聪明钱机构持仓的对比分析
- * 数据来源：MEMORY.md Investment Portfolio（2026-03-18）
+ * 数据来源：MEMORY.md Investment Portfolio（2026-04-18）
+ * Signal Arena 实盘记录（2026-04-17）
  */
 
 import { useState, useEffect } from 'react';
@@ -35,28 +36,27 @@ const C = {
 };
 
 const TOTAL_CAPITAL = 600000;   // 60万总资金
-const INVESTED_RATIO = 0.70;    // 70%仓位
-const INVESTED_CAPITAL = TOTAL_CAPITAL * INVESTED_RATIO; // 42万
+const INVESTED_RATIO = 0.96;    // ~96%仓位（MEMORY.md 2026-04-18：现金约4%）
+const INVESTED_CAPITAL = TOTAL_CAPITAL * INVESTED_RATIO; // ~57.6万
 
-// Kevin 真实持仓（来源：MEMORY.md + Signal Arena 建仓记录 2026-04-12）
-// 分配：安克创新40%·乖宝宠物10%·东芯股份10%·阿里巴巴5%·小米5%·世纪华通5% = 75% ≈ 70%
-// 注意：shares/cost 为 null 的标的，P&L 将显示"—"
-
+// Kevin 真实持仓（来源：MEMORY.md Investment Portfolio 2026-04-18）
+// 分配：小米39.1%·安克创新24.6%·腾讯13%·美团11.6%·泡泡玛特11.6% ≈ 99.9% ≈ 满仓
+// 注意：shares/cost 为 null 的标的，P&L 参考成本按分配比例估算，显示"—"
 const KEVIN_HOLDINGS: Holding[] = [
-  { ticker: '300866', name: '安克创新', market: 'CN', shares: 800,  cost: 116.25, sector: '消费电子/出海',  allocation: 0.40 }, // 来自 Signal Arena
-  { ticker: '301498', name: '乖宝宠物', market: 'CN', shares: null, cost: null,  sector: '宠物经济',       allocation: 0.10 },
-  { ticker: '688110', name: '东芯股份', market: 'CN', shares: null, cost: null,  sector: 'AI存储芯片',     allocation: 0.10 },
-  { ticker: '9988.HK', name: '阿里巴巴', market: 'HK', shares: null, cost: null,  sector: '电商/AI',        allocation: 0.05 },
-  { ticker: '1810.HK', name: '小米集团',  market: 'HK', shares: null, cost: null,  sector: 'AI硬件',        allocation: 0.05 },
-  { ticker: '002602', name: '世纪华通', market: 'CN', shares: null, cost: null,  sector: '游戏/AI算力',   allocation: 0.05 },
+  { ticker: '01810.HK', name: '小米集团',  market: 'HK', shares: null,  cost: null,   sector: 'AI硬件/新能源',  allocation: 0.391 }, // 39.1%
+  { ticker: '300866',   name: '安克创新',  market: 'CN', shares: null,  cost: null,   sector: '消费电子/出海',  allocation: 0.246 }, // 24.6%
+  { ticker: '00700.HK', name: '腾讯控股',  market: 'HK', shares: null,  cost: null,   sector: '互联网/AI',      allocation: 0.130 }, // 13.0%
+  { ticker: '03690.HK', name: '美团',      market: 'HK', shares: null,  cost: null,   sector: '本地生活/外卖',  allocation: 0.116 }, // 11.6%
+  { ticker: '09992.HK', name: '泡泡玛特',  market: 'HK', shares: null,  cost: null,   sector: '消费/潮玩',       allocation: 0.116 }, // 11.6%
 ];
 
-// 汇率
+// 汇率（toCNY 乘法因子：1外币单位 = FX[currency] 元人民币）
 const FX: Record<string, number> = { CNY: 1, HKD: 0.93, USD: 7.25 };
 
 function getYahooTicker(ticker: string): string {
-  if (ticker.endsWith('.HK')) return ticker;
-  if (/^\d{6}$/.test(ticker)) return `${ticker}.SS`;
+  // Yahoo Finance HK format: HHHHHH.HK (5-digit zero-padded code)
+  if (/^\d{5}\.HK$/i.test(ticker)) return ticker.toUpperCase(); // already correct format
+  if (/^\d{6}$/.test(ticker)) return `${ticker}.SS`;             // A-share: 6-digit.SS
   return ticker;
 }
 
@@ -64,7 +64,7 @@ function toCNY(amount: number, currency: string): number {
   return amount * (FX[currency] ?? 1);
 }
 
-async function fetchPrice(ticker: string, market: string): Promise<Omit<PriceData, 'ticker' | 'loading'>> {
+async function fetchPrice(ticker: string, market: string): Promise<Omit<PriceData, 'ticker' | 'loading'> & { timestamp?: number }> {
   const yahoo = getYahooTicker(ticker);
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${yahoo}?interval=1d&range=5d`;
   try {
@@ -78,12 +78,16 @@ async function fetchPrice(ticker: string, market: string): Promise<Omit<PriceDat
     const curr = closes[closes.length - 1];
     const prev = closes[closes.length - 2];
     const currencyMap: Record<string, string> = { CN: 'CNY', HK: 'HKD', US: 'USD' };
+    // 取最新一根K线的时间戳（Unix秒）
+    const timestamps = result.timestamp ?? [];
+    const latestTs = timestamps.length > 0 ? timestamps[timestamps.length - 1] : undefined;
     return {
       price: curr,
       change: curr - prev,
       changePct: ((curr - prev) / prev) * 100,
       currency: currencyMap[market] ?? 'CNY',
       market: market as 'CN' | 'HK' | 'US',
+      timestamp: latestTs,
     };
   } catch (err: unknown) {
     throw new Error((err as Error).message);
@@ -94,6 +98,7 @@ export default function KevinPortfolio() {
   const [prices, setPrices] = useState<Map<string, PriceData>>(new Map());
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<string>('—');
+  const [dataDate, setDataDate] = useState<string>('—'); // 实际行情日期
 
   useEffect(() => {
     let cancelled = false;
@@ -113,7 +118,8 @@ export default function KevinPortfolio() {
       results.forEach((r, i) => {
         const ticker = tickers[i];
         if (r.status === 'fulfilled') {
-          newPrices.set(ticker, { loading: false, ...r.value });
+          const { timestamp: _ts, ...priceRest } = r.value;
+          newPrices.set(ticker, { loading: false, ...priceRest });;
         } else {
           newPrices.set(ticker, {
             loading: false, price: 0, change: 0,
@@ -128,6 +134,20 @@ export default function KevinPortfolio() {
         setLastUpdated(new Date().toLocaleTimeString('zh-CN', {
           hour: '2-digit', minute: '2-digit',
         }));
+
+        // 提取最新行情日期（取所有标的中最晚的timestamp）
+        const timestamps = (results as PromiseFulfilledResult<{ ticker: string; timestamp: number }>[])
+          .filter(r => r.status === 'fulfilled' && r.value.timestamp)
+          .map(r => r.value.timestamp);
+        if (timestamps.length > 0) {
+          const latestTs = Math.max(...timestamps) * 1000; // 转为毫秒
+          const tradingDate = new Date(latestTs);
+          setDataDate(tradingDate.toLocaleDateString('zh-CN', {
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            timeZone: 'Asia/Shanghai',
+          }));
+        }
+
         setLoading(false);
       }
     }
@@ -195,12 +215,28 @@ export default function KevinPortfolio() {
               {lastUpdated}
             </div>
           )}
+          {dataDate !== '—' && (
+            <div style={{
+              padding: '4px 10px', borderRadius: 8,
+              background: `${C.green}12`, border: `1px solid ${C.green}30`,
+              fontSize: 11, fontWeight: 600, color: C.green,
+            }}>
+              📅 {dataDate} 收盘
+            </div>
+          )}
+          <div style={{
+            padding: '4px 10px', borderRadius: 8,
+            background: `${C.purple}12`, border: `1px solid ${C.purple}30`,
+            fontSize: 11, fontWeight: 600, color: C.purple,
+          }}>
+            Yahoo Finance
+          </div>
           <div style={{
             padding: '4px 10px', borderRadius: 8,
             background: `${C.blue}12`, border: `1px solid ${C.blue}30`,
             fontSize: 11, fontWeight: 700, color: C.blue,
           }}>
-            总仓位 {Math.round(INVESTED_RATIO * 100)}%
+            总仓位 ~96%
           </div>
         </div>
       </div>
@@ -349,7 +385,7 @@ export default function KevinPortfolio() {
 
       {/* Footer */}
       <div style={{ fontSize: 11, color: C.text3, lineHeight: 1.7 }}>
-        数据来源：Yahoo Finance 实时行情 · 成本价为参考买入价（安克创新持仓800股@¥116.25）· 汇率：USD/CNY 7.25、HKD/CNY 0.93 · 仅供个人追踪，不构成投资建议
+        <span style={{ color: C.purple, fontWeight: 600 }}>行情数据：</span>Yahoo Finance（🇭🇰港股/🇨🇳A股）· <span style={{ color: C.blue, fontWeight: 600 }}>持仓配置：</span>Signal Arena（2026-04-12建仓）· <span style={{ color: C.yellow, fontWeight: 600 }}>成本基准：</span>参考均价 · 总资金 ¥60万 · 汇率：USD/CNY 7.25、HKD/CNY 0.93 · 不构成投资建议
       </div>
 
       <style>{`

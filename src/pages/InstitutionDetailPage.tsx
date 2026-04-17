@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * InstitutionDetailPage — 机构详情全屏页
  * 从机构 Tab 点击进入，展示完整持仓分析 + 与同类机构对比
