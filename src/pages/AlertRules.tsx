@@ -17,6 +17,7 @@ interface NotificationLog {
   status: 'success' | 'error';
   message: string;
   time: string;
+  timeFull: string;
 }
 
 async function sendFeishuNotification(content: string): Promise<{ success: boolean; msg: string }> {
@@ -56,11 +57,24 @@ export default function AlertRules() {
   const [testing, setTesting] = useState(false);
 
   const now = () => new Date().toLocaleString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const nowFull = () => new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  // Relative time helper: takes full locale string from nowFull()
+  const relativeTime = (fullTimeStr: string): string => {
+    try {
+      const then = new Date(fullTimeStr.replace(' ', 'T') + ':00+08:00').getTime();
+      const diffMs = Date.now() - then;
+      if (diffMs < 60000) return '刚刚';
+      if (diffMs < 3600000) return `${Math.floor(diffMs / 60000)}分钟前`;
+      if (diffMs < 86400000) return `${Math.floor(diffMs / 3600000)}小时前`;
+      return `${Math.floor(diffMs / 86400000)}天前`;
+    } catch { return fullTimeStr; }
+  };
 
   const handleTestFeishu = async () => {
     setTesting(true);
     const content = `🧪 【测试通知】\n聪明钱 Tracker 预警系统运行正常\n发送时间：${new Date().toLocaleString('zh-CN')}\n如果你收到此消息，说明飞书机器人配置正确 ✅`;
     const result = await sendFeishuNotification(content);
+    const ts = nowFull();
     setLogs(prev => [{
       id: Date.now(),
       stockTicker: 'TEST',
@@ -70,6 +84,7 @@ export default function AlertRules() {
       status: result.success ? 'success' : 'error',
       message: result.success ? `✅ 飞书通知发送成功！${result.msg}` : `❌ 发送失败：${result.msg}`,
       time: now(),
+      timeFull: ts,
     }, ...prev]);
     setTesting(false);
   };
@@ -114,6 +129,7 @@ export default function AlertRules() {
         const msgText = data.triggered
           ? `✅ 规则已保存，已触发 ${data.count} 条异动推送`
           : `✅ 规则已保存，当前无异动（${data.reason}）`;
+        const ts = nowFull();
         setLogs(prev => [{
           id: Date.now(),
           stockTicker, stockName,
@@ -122,8 +138,10 @@ export default function AlertRules() {
           status: data.triggered ? 'success' : 'success',
           message: msgText,
           time: now(),
+          timeFull: ts,
         }, ...prev]);
       } catch (err) {
+        const ts = nowFull();
         setLogs(prev => [{
           id: Date.now(),
           stockTicker, stockName,
@@ -132,6 +150,7 @@ export default function AlertRules() {
           status: 'error',
           message: `❌ 推送失败：${(err as Error).message}`,
           time: now(),
+          timeFull: ts,
         }, ...prev]);
       }
     }
@@ -255,7 +274,10 @@ export default function AlertRules() {
                 {log.status === 'success'
                   ? <CheckCircle2 size={14} color="#22c55e" />
                   : <XCircle size={14} color="#ef4444" />}
-                <span style={{fontFamily:'JetBrains Mono,monospace',fontSize:11,color:'#52525b',width:70}}>{log.time}</span>
+                <div style={{display:'flex',flexDirection:'column',minWidth:70}}>
+                  <span style={{fontFamily:'JetBrains Mono,monospace',fontSize:11,color:'#52525b'}}>{log.time}</span>
+                  <span style={{fontSize:10,color:'#38bdf8'}}>{relativeTime(log.timeFull)}</span>
+                </div>
                 <span style={{fontSize:11,color:'#a1a1aa'}}>{log.message}</span>
               </div>
             ))}
