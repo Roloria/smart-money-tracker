@@ -4,6 +4,7 @@
  * Phase 6: 小盘股建仓/加仓信号 + 机构持仓详情
  */
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Star, TrendingUp, TrendingDown, Clock, Building2, ExternalLink } from 'lucide-react';
 // recharts dynamically imported (see dynamic import pattern in SmartMoney.tsx)
 import { getSmallCapSignals, SMALL_CAP_TRACKED } from '../data/aiChain';
@@ -107,6 +108,7 @@ function SignalRow({ sig, onClick }: { sig: ReturnType<typeof getSmallCapSignals
 
 // 二跳：个股详情
 function StockDetailPanel({ ticker }: { ticker: string }) {
+  const navigate = useNavigate();
   const holdings = getAllHoldings().filter(h => h.stockTicker === ticker);
   const meta = SMALL_CAP_TRACKED.find(s => s.ticker === ticker);
   const signals = getSmallCapSignals().filter(s => s.ticker === ticker);
@@ -128,7 +130,7 @@ function StockDetailPanel({ ticker }: { ticker: string }) {
   return (
     <div>
       <button
-        onClick={() => history.back()}
+        onClick={() => navigate(-1)}
         style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', background: 'transparent', border: `1px solid ${C.border}`, borderRadius: 8, cursor: 'pointer', color: C.text3, fontSize: 12, marginBottom: 16 }}
       >
         ← 返回小盘股
