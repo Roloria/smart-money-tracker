@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Globe, Filter, Clock } from 'lucide-react';
 import { institutions, formatNumber, typeLabels, typeColors } from '../data/mockData';
-import { holdings } from '../data/mockData';
+import { holdings as mockHoldings } from '../data/mockData';
+import { getAllHoldings } from '../data/realData';
 import { getInstitutionSourceInfo } from '../data/realData';
 
 const C = {
@@ -18,6 +19,9 @@ const filterMap: Record<string, string | undefined> = {
   '资产管理': 'asset_manager',
   '银行': 'bank',
 };
+
+// Merge mock holdings + real holdings from realData.ts
+const ALL_HOLDINGS = getAllHoldings();
 
 export default function Institutions() {
   const [activeFilter, setActiveFilter] = useState('全部');
@@ -51,7 +55,8 @@ export default function Institutions() {
       {/* Cards Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
         {filtered.map(inst => {
-          const instHoldings = holdings.filter((h: any) => h.institutionId === inst.id);
+          // Use ALL_HOLDINGS (merged mock + real) so institutions with real data show correct holdings
+          const instHoldings = ALL_HOLDINGS.filter((h: any) => h.institutionId === inst.id);
           const totalVal = instHoldings.reduce((s: number, h: any) => s + h.marketValue, 0);
           const gains = instHoldings.filter((h: any) => h.changePercent > 0).length;
           const losses = instHoldings.filter((h: any) => h.changePercent < 0).length;
@@ -84,7 +89,7 @@ export default function Institutions() {
                   <div style={{ width: 6, height: 6, borderRadius: '50%', background: freshnessColor, flexShrink: 0, boxShadow: `0 0 5px ${freshnessColor}` }} />
                   <Clock size={10} color={C.text3} />
                   <span style={{ fontSize: 10, color: '#71717a' }}>
-                    数据来源: <span style={{ fontWeight: 700, color: srcInfo.freshness === 'live' ? '#38bdf8' : srcInfo.freshness === 'recent' ? C.yellow : C.text3 }}>{srcInfo.source === 'SEC_EDGAR' ? 'SEC EDGAR 13F' : srcInfo.source === 'HKEX' ? '港交所披露易' : '东方财富 QFII'}</span>
+                    数据来源: <span style={{ fontWeight: 700, color: srcInfo.freshness === 'live' ? '#38bdf8' : srcInfo.freshness === 'recent' ? C.yellow : C.text3 }}>{srcInfo.source === 'SEC_EDGAR' ? 'SEC EDGAR 13F' : srcInfo.source === 'HKEX' ? '港交所披露易' : srcInfo.source === 'EASTMONEY_QFII' ? '东方财富 QFII' : '东方财富 QFII'}</span>
                   </span>
                   <span style={{ width: 1, height: 10, background: '#333', margin: '0 2px' }} />
                   <span style={{ fontSize: 10, color: C.text3, fontFamily: 'JetBrains Mono, monospace' }}>{srcInfo.lastUpdated}</span>
@@ -96,11 +101,11 @@ export default function Institutions() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 12 }}>
                   <div style={{ background: '#0f0f0f', borderRadius: 6, padding: '8px 10px' }}>
                     <div style={{ fontSize: 10, color: '#52525b', marginBottom: 2 }}>持仓市值</div>
-                    <div style={{ fontSize: 13, fontWeight: 700, fontFamily: 'JetBrains Mono, monospace', color: '#fafafa' }}>{formatNumber(inst.totalValue)}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, fontFamily: 'JetBrains Mono, monospace', color: '#fafafa' }}>{formatNumber(totalVal || inst.totalValue)}</div>
                   </div>
                   <div style={{ background: '#0f0f0f', borderRadius: 6, padding: '8px 10px' }}>
                     <div style={{ fontSize: 10, color: '#52525b', marginBottom: 2 }}>持股数</div>
-                    <div style={{ fontSize: 13, fontWeight: 700, fontFamily: 'JetBrains Mono, monospace', color: '#fafafa' }}>{inst.holdingCount}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, fontFamily: 'JetBrains Mono, monospace', color: '#fafafa' }}>{instHoldings.length || inst.holdingCount}</div>
                   </div>
                   <div style={{ background: '#0f0f0f', borderRadius: 6, padding: '8px 10px' }}>
                     <div style={{ fontSize: 10, color: '#52525b', marginBottom: 2 }}>本季异动</div>

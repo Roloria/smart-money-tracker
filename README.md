@@ -2,7 +2,11 @@
 
 > 追踪全球顶级主权基金与对冲机构的真实持仓，让散户也能跟踪"聪明钱"的流向
 
-**线上地址：** https://lkr23leyg4y0.space.minimaxi.com
+**线上地址：** https://l4s5iabvvn08.space.minimaxi.com（v20 · Phase 8）
+
+> v22 新增：**💡 AI 持仓诊断** — 规则引擎分析 Kevin 个人持仓，对比机构平均配置，输出超配/低配信号 + 集中度风险 + 3条文字建议 + 纯 CSS 板块对比图
+
+> v21 新增：**📲 飞书预警推送** — 保存预警规则自动触发飞书 Card 通知，绿/红/黄配色标识增持/减持/新建仓信号
 
 [![React](https://img.shields.io/badge/React-19.2-61DAFB?logo=react)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?logo=typescript)](https://www.typescriptlang.org)
@@ -40,16 +44,34 @@
 - 监测机构新建仓/加仓的小盘股信号
 - 展示机构持仓明细与季度变化
 
-### 7. 💼 Kevin 个人持仓追踪
+### 7. 💰 AI 资金流向预测
+- 规则引擎（非 AI API）分析机构季度持仓变化，自动计算个股与板块信号
+- 信号类型：强势买入 / 买入 / 新建仓 / 观望 / 减仓 / 清仓警示
+- 板块资金流向图：Top 流入板块 & Top 流出板块
+- 个股信号列表（颜色标签 + 机构数量 + 平均变化幅度）
+- 纯 div 条形图实现，无额外图表依赖
+
+### 8. 💼 Kevin 个人持仓追踪 + 💡 AI 持仓诊断（v22 新增）
 - 真实持仓（小米集团 39.1%、安克创新 24.6%、腾讯控股 13.0%、美团 11.6%、泡泡玛特 11.6%、现金 4%）
 - 实时行情价格（Yahoo Finance）+ 今日涨跌
 - 仓位权重可视化（占总资金60万）
+- **AI 持仓诊断（v22 新增）** — 规则引擎（非 AI API）诊断功能：
+  - **板块超配/低配分析**：Kevin 持仓 vs 机构平均配置对比，超配 > 2倍显示「⚠️ 超配」，< 50% 显示「📉 低配」，否则「✅ 正常」
+  - **集中度风险**：单只股票占总仓位 > 40% 触发红色警告
+  - **AI 建议**：根据诊断结果输出 2-3 条 if/else 规则文字建议（高/中/低优先级）
+  - **纯 CSS 板块对比条形图**：金色（Kevin）vs 灰色（机构平均）横向条形图，无 recharts 依赖
 
-### 8. 🔔 预警规则
+### 9. 🔔 预警规则
 - 可视化配置股票异动预警（阈值设定）
 - 预警历史记录
 
-### 9. ⚙️ 数据源管理
+### 10. 📲 飞书预警推送（v21 新增）
+- 后端 `/api/alert-test` — 发送测试消息验证 Webhook 连通性
+- 后端 `/api/alert-trigger` — 保存规则时自动触发飞书推送（仅异动时）
+- 飞书 Card 消息格式：绿（增持）/ 红（减持）/ 黄（新建仓）配色
+- 显示字段：股票代码、名称、变化幅度、机构名称、季度、触发阈值
+
+### 11. ⚙️ 数据源管理
 - 展示各数据源状态（SEC EDGAR / HKEX / 东方财富QFII / Tushare沪深港通）
 - 一键刷新最新数据
 
@@ -66,9 +88,10 @@ Frontend (SPA — 单页应用)
 Backend (Node.js API Server)
   Express.js + Python Scraper
   数据源：SEC EDGAR 13F · HKEX 披露易 · 东方财富QFII · Tushare沪深港通
+  预警推送：飞书 Webhook Card 消息
 
 部署
-  Vercel (Frontend) + GitHub Actions Cron
+  托管平台（Frontend） + GitHub Actions Cron
 ```
 
 ---
@@ -154,7 +177,8 @@ smart-money-tracker/
 │   └── types/
 │       └── index.ts             # TypeScript类型定义
 ├── server/                  # Node.js API服务器
-│   └── index.js              # 路由：/api/sources · /api/refresh/:id
+│   ├── index.js              # 路由：/api/sources · /api/refresh/:id · /api/alert-test · /api/alert-trigger
+│   └── alertPush.js          # v21: 飞书预警推送模块
 ├── scripts/                 # Python数据抓取脚本
 │   ├── sec_13f_scraper.py   # SEC EDGAR 13F 爬虫
 │   ├── hkex_scraper.py      # HKEX 披露易爬虫
@@ -174,6 +198,7 @@ smart-money-tracker/
 - [x] 板块热力图
 - [x] 机构重合度分析
 - [x] 预警规则配置（前端）
+- [x] 飞书预警推送（v21 新增）
 - [x] Kevin 个人持仓追踪（实时行情）
 - [x] AI 产业链追踪（5大层）
 - [x] 小盘股建仓监测
@@ -182,7 +207,7 @@ smart-money-tracker/
 - [x] HKEX 数据爬虫（含mock fallback）
 - [x] 东方财富 QFII 爬虫
 - [x] A股持仓数据（东方财富 + Tushare）
-- [ ] 飞书/Email 预警通知（后端对接）
+- [ ] Email 邮件预警通知
 - [ ] 持仓历史趋势图
 - [ ] 机构持仓历史走势
 - [x] 移动端适配

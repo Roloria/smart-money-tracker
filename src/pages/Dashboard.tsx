@@ -1,13 +1,59 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { TrendingUp, TrendingDown, Building2, DollarSign, Activity, ArrowUpRight, ArrowDownRight, Star } from 'lucide-react';
+import { TrendingUp, TrendingDown, Building2, DollarSign, Activity, ArrowUpRight, ArrowDownRight, Star, Clock, TrendingUpCircle } from 'lucide-react';
 import { institutions, holdings, holdingChanges, formatNumber, formatPercent, typeLabels, typeColors } from '../data/mockData';
+
+
+// ── Market Status ──────────────────────────────────────────────────────────────
+function MarketStatus() {
+  const now = new Date();
+  const utcHour = now.getUTCHours();
+  const utcMin = now.getUTCMinutes();
+  const shanghaiHour = utcHour + 8;
+  const day = now.getUTCDay(); // 0=Sun, 6=Sat
+
+  const isWeekday = day >= 1 && day <= 5;
+
+  // US market: 9:30-16:00 ET = 21:30-04:00+1 Shanghai (next day)
+  const usOpen = isWeekday && ((shanghaiHour > 21 || (shanghaiHour === 21 && utcMin >= 30)) || shanghaiHour < 4);
+
+  // HK market: 9:30-16:00 HKT = 1:30-8:00 Shanghai
+  const hkOpen = isWeekday && shanghaiHour >= 1 && shanghaiHour < 4;
+
+  // CN market: 9:30-15:00 CST = 9:30-15:00 Shanghai (no offset)
+  const cnOpen = isWeekday && shanghaiHour >= 9 && shanghaiHour < 15;
+
+  const markets = [
+    { label: '🇺🇸 美股', open: usOpen },
+    { label: '🇭🇰 港股', open: hkOpen },
+    { label: '🇨🇳 A股', open: cnOpen },
+  ];
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 6 }}>
+      {markets.map(m => (
+        <div key={m.label} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: m.open ? '#22c55e' : '#3f3f46' }}>
+          <div style={{ width: 6, height: 6, borderRadius: '50%', background: m.open ? '#22c55e' : '#3f3f46', boxShadow: m.open ? '0 0 4px #22c55e' : 'none' }} />
+          <span style={{ fontWeight: m.open ? 600 : 400 }}>{m.label}</span>
+          <span style={{ color: m.open ? '#22c55e' : '#52525b', fontWeight: 400 }}>{m.open ? '开市' : '休市'}</span>
+        </div>
+      ))}
+      <span style={{ marginLeft: 4, fontSize: 10, color: '#3f3f46' }}>（北京时间）</span>
+    </div>
+  );
+}
 
 export default function Dashboard() {
   const instCount = institutions.length;                              // 动态计算，避免硬编码
   const totalValue = institutions.reduce((sum, i) => sum + i.totalValue, 0);
   const totalIncreases = holdings.filter(h => h.changePercent > 0).length;
   const totalDecreases = holdings.filter(h => h.changePercent < 0).length;
+
+  // ── Institutional Sentiment Gauge ─────────────────────────────────────────
+  const total = totalIncreases + totalDecreases;
+  const sentimentPct = total > 0 ? (totalIncreases / total) * 100 : 50;
+  const sentimentLabel = sentimentPct >= 70 ? '偏多' : sentimentPct >= 55 ? '谨慎看多' : sentimentPct >= 45 ? '中性' : sentimentPct >= 30 ? '谨慎看空' : '偏空';
+  const sentimentColor = sentimentPct >= 70 ? '#22c55e' : sentimentPct >= 55 ? '#84cc16' : sentimentPct >= 45 ? '#71717a' : sentimentPct >= 30 ? '#f59e0b' : '#ef4444';
 
   const recentChanges = holdingChanges
     .sort((a, b) => Math.abs(b.changePercent) - Math.abs(a.changePercent))
@@ -17,8 +63,29 @@ export default function Dashboard() {
     <div>
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 700, color: '#fafafa', margin: 0 }}>机构总览</h1>
-        <p style={{ fontSize: 14, color: '#71717a', margin: '4px 0 0' }}>跟踪全球顶级主权基金 & 机构投资者持仓动向</p>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+          <div>
+            <h1 style={{ fontSize: 24, fontWeight: 700, color: '#fafafa', margin: 0 }}>机构总览</h1>
+            <p style={{ fontSize: 14, color: '#71717a', margin: '4px 0 0' }}>跟踪全球顶级主权基金 & 机构投资者持仓动向</p>
+            <MarketStatus />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+            {/* Sentiment gauge */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#141414', border: '1px solid #1e1e1e', borderRadius: 10, padding: '8px 14px' }}>
+              <TrendingUpCircle size={14} color={sentimentColor} />
+              <span style={{ fontSize: 11, color: '#71717a' }}>机构情绪</span>
+              <div style={{ position: 'relative', width: 60, height: 6, background: '#1e1e1e', borderRadius: 3 }}>
+                <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${sentimentPct}%`, background: `linear-gradient(90deg, #ef4444, #f59e0b, #22c55e)`, borderRadius: 3 }} />
+              </div>
+              <span style={{ fontSize: 11, fontWeight: 700, color: sentimentColor }}>{sentimentLabel}</span>
+            </div>
+            {/* Data freshness */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, color: '#52525b' }}>
+              <Clock size={10} />
+              <span>数据来源：SEC EDGAR · 2025 Q4</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Stat Cards */}

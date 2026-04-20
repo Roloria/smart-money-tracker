@@ -1,23 +1,44 @@
 import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { TrendingUp, TrendingDown, Sparkles, XCircle, Filter } from 'lucide-react';
-import { holdingChanges, institutions, formatNumber, formatPercent, formatShares } from '../data/mockData';
+import { holdingChanges, institutions, formatNumber, formatPercent, formatShares, holdings } from '../data/mockData';
 
 const typeFilters = [
   { label: '全部', value: 'all', icon: null },
-  { label: '增持 ↑20%+', value: 'increase', icon: TrendingUp },
-  { label: '减持 ↓20%+', value: 'decrease', icon: TrendingDown },
+  { label: '增持 ↑', value: 'increase', icon: TrendingUp },
+  { label: '减持 ↓', value: 'decrease', icon: TrendingDown },
   { label: '新建仓', value: 'new', icon: Sparkles },
   { label: '清仓', value: 'exited', icon: XCircle },
 ];
 
+// Derive sectors and markets dynamically from holdings data
+const SECTORS = [...new Set(holdings.map(h => h.sector))].sort();
+const MARKETS = [
+  { label: '全部市场', value: 'all' },
+  { label: '🇺🇸 美股', value: 'US' },
+  { label: '🇭🇰 港股', value: 'HK' },
+  { label: '🇨🇳 A股', value: 'CN' },
+];
+
+// Build ticker -> sector & market lookup from holdings
+const TICKER_SECTOR: Record<string, string> = {};
+const TICKER_MARKET: Record<string, string> = {};
+holdings.forEach(h => {
+  if (!TICKER_SECTOR[h.stockTicker]) TICKER_SECTOR[h.stockTicker] = h.sector;
+  if (!TICKER_MARKET[h.stockTicker]) TICKER_MARKET[h.stockTicker] = h.market || 'US';
+});
+
 export default function Changes() {
   const [typeFilter, setTypeFilter] = useState('all');
   const [instFilter, setInstFilter] = useState('all');
+  const [sectorFilter, setSectorFilter] = useState('all');
+  const [marketFilter, setMarketFilter] = useState('all');
 
   const filtered = holdingChanges.filter(c => {
     if (typeFilter !== 'all' && c.changeType !== typeFilter) return false;
     if (instFilter !== 'all' && c.institutionId !== Number(instFilter)) return false;
+    if (sectorFilter !== 'all' && TICKER_SECTOR[c.stockTicker] !== sectorFilter) return false;
+    if (marketFilter !== 'all' && TICKER_MARKET[c.stockTicker] !== marketFilter) return false;
     return true;
   }).sort((a, b) => Math.abs(b.changePercent) - Math.abs(a.changePercent));
 
@@ -35,23 +56,48 @@ export default function Changes() {
       </div>
 
       {/* Filters */}
-      <div style={{display:'flex',alignItems:'center',gap:16,marginBottom:24,flexWrap:'wrap'}}>
-        <div style={{display:'flex',alignItems:'center',gap:8}}>
-          <Filter size={14} color="#71717a" />
-          <span style={{fontSize:12,color:'#52525b'}}>类型：</span>
+      <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:20,flexWrap:'wrap'}}>
+        {/* Type filters */}
+        <div style={{display:'flex',alignItems:'center',gap:6}}>
+          <Filter size={13} color="#52525b" />
+          <span style={{fontSize:11,color:'#52525b'}}>类型：</span>
           {typeFilters.map(f => {
             const Icon = f.icon;
             return (
-              <button key={f.value} onClick={() => setTypeFilter(f.value)} className={`tag-filter ${typeFilter===f.value?'active':''}`} style={{display:'flex',alignItems:'center',gap:4}}>
-                {Icon && <Icon size={11} />} {f.label}
+              <button key={f.value} onClick={() => setTypeFilter(f.value)} className={`tag-filter ${typeFilter===f.value?'active':''}`} style={{display:'flex',alignItems:'center',gap:3,padding:'4px 10px',borderRadius:6,fontSize:11,fontWeight:600,cursor:'pointer',transition:'all 0.15s',
+                background: typeFilter===f.value ? 'rgba(56,189,248,0.12)' : 'transparent',
+                border: `1px solid ${typeFilter===f.value ? 'rgba(56,189,248,0.35)' : '#1e1e1e'}`,
+                color: typeFilter===f.value ? '#38bdf8' : '#71717a',
+              }}>
+                {Icon && <Icon size={10} />} {f.label}
               </button>
             );
           })}
         </div>
-        <select className="input-base" style={{width:180,padding:'6px 10px',fontSize:12}} value={instFilter} onChange={e => setInstFilter(e.target.value)}>
+      </div>
+
+      {/* Secondary filters row */}
+      <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:24,flexWrap:'wrap'}}>
+        {/* Sector filter */}
+        <select className="input-base" style={{padding:'6px 10px',fontSize:12,background:'#141414',border:'1px solid #1e1e1e',color:'#a1a1aa',borderRadius:8,cursor:'pointer'}}
+          value={sectorFilter} onChange={e => setSectorFilter(e.target.value)}>
+          <option value="all">全部板块</option>
+          {SECTORS.map(s => <option key={s} value={s}>{s}</option>)}
+        </select>
+
+        {/* Market filter */}
+        <select className="input-base" style={{padding:'6px 10px',fontSize:12,background:'#141414',border:'1px solid #1e1e1e',color:'#a1a1aa',borderRadius:8,cursor:'pointer'}}
+          value={marketFilter} onChange={e => setMarketFilter(e.target.value)}>
+          {MARKETS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
+        </select>
+
+        {/* Institution filter */}
+        <select className="input-base" style={{padding:'6px 10px',fontSize:12,background:'#141414',border:'1px solid #1e1e1e',color:'#a1a1aa',borderRadius:8,cursor:'pointer'}}
+          value={instFilter} onChange={e => setInstFilter(e.target.value)}>
           <option value="all">全部机构</option>
           {institutions.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
         </select>
+
         <span style={{marginLeft:'auto',fontSize:12,color:'#52525b',fontFamily:'JetBrains Mono,monospace'}}>{filtered.length} 条记录</span>
       </div>
 
@@ -67,7 +113,7 @@ export default function Changes() {
               <Tooltip formatter={(v)=>[`${Number(v) > 0 ? '+' : ''}${Number(v).toFixed(1)}%`, '变化幅度']} contentStyle={{background:'#141414',border:'1px solid #262626',borderRadius:6,fontSize:12,color:'#fafafa'}} />
               <Bar dataKey="value" radius={[3,3,0,0]}>
                 {chartData.map((entry, i) => (
-                  <Cell key={i} fill={entry.value > 0 ? '#22c55e' : entry.type === 'new' ? '#f59e0b' : entry.type === 'exited' ? '#71717a' : '#ef4444'} fillOpacity={0.85} />
+                  <Cell key={i} fill={entry.value > 0 ? '#22c55e' : entry.type === 'new' ? '#f59e0b' : entry.type === 'exited' ? '#71768b' : '#ef4444'} fillOpacity={0.85} />
                 ))}
               </Bar>
             </BarChart>
@@ -82,6 +128,7 @@ export default function Changes() {
             <tr>
               <th>股票</th>
               <th>机构</th>
+              <th>板块</th>
               <th>类型</th>
               <th style={{textAlign:'right'}}>变化幅度</th>
               <th style={{textAlign:'right'}}>上季持股</th>
@@ -94,6 +141,8 @@ export default function Changes() {
               const inst = institutions.find(i => i.id === c.institutionId)!;
               const badgeClass = c.changeType==='increase'?'badge-gain':c.changeType==='decrease'?'badge-loss':c.changeType==='new'?'badge-new':'badge-exit';
               const typeLabel = c.changeType==='increase'?'增持':c.changeType==='decrease'?'减持':c.changeType==='new'?'新建仓':'清仓';
+              const marketBadge = {US:'🇺🇸 US',HK:'🇭🇰 HK',CN:'🇨🇳 A股'}[TICKER_MARKET[c.stockTicker]] || TICKER_MARKET[c.stockTicker];
+              const marketColor = {US:'#38bdf8',HK:'#f59e0b',CN:'#ef4444'}[TICKER_MARKET[c.stockTicker]] || '#71717a';
               return (
                 <tr key={c.id}>
                   <td>
@@ -106,6 +155,12 @@ export default function Changes() {
                         <span style={{fontSize:10,fontWeight:700,color:inst.color}}>{inst.name[0]}</span>
                       </div>
                       <span style={{fontSize:13,color:'#a1a1aa'}}>{inst.name}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div style={{display:'flex',alignItems:'center',gap:6}}>
+                      <span style={{fontSize:11,padding:'2px 7px',borderRadius:5,background:'rgba(56,189,248,0.08)',color:'#38bdf8',fontWeight:600,whiteSpace:'nowrap'}}>{TICKER_SECTOR[c.stockTicker] || '其他'}</span>
+                      <span style={{fontSize:10,padding:'2px 6px',borderRadius:5,background:`${marketColor}15`,color:marketColor,fontWeight:700}}>{marketBadge}</span>
                     </div>
                   </td>
                   <td><span className={`badge ${badgeClass}`}>{typeLabel}</span></td>

@@ -10,6 +10,7 @@ import { dirname, join } from 'path';
 import { spawn } from 'child_process';
 import cors from 'cors';
 import { readFileSync, existsSync } from 'fs';
+import { sendAlertMessage, sendTestMessage } from './alertPush.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -266,6 +267,72 @@ app.get('/api/holdings', (req, res) => {
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
+});
+
+// ── Alert Push Routes ─────────────────────────────────────────────────────────
+
+// GET /api/alert-test — 发送测试消息到飞书
+app.get('/api/alert-test', async (req, res) => {
+  try {
+    const result = await sendTestMessage();
+    res.json({ success: result.success, message: result.msg });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// POST /api/alert-trigger — 接收规则并检查是否有匹配持仓变化，触发推送
+app.post('/api/alert-trigger', async (req, res) => {
+  const { ticker, stockName, threshold, institutionId, notifyFeishu } = req.body;
+
+  if (!ticker) {
+    return res.status(400).json({ success: false, error: '缺少 ticker 参数' });
+  }
+
+  if (!notifyFeishu) {
+    return res.json({ success: true, triggered: false, reason: '用户未开启飞书通知' });
+  }
+
+  // 模拟检查持仓变化（真实场景：从 realData.ts / mockData.ts 读取最新持仓并比对）
+  // 这里演示用随机变化幅度模拟实际业务逻辑
+  const mockChanges = [
+    { institutionName: '贝莱德',   changePercent:  26.7, quarter: '2025Q4', signalType: 'increase' },
+    { institutionName: '高盛',     changePercent: -21.7, quarter: '2025Q4', signalType: 'decrease' },
+    { institutionName: '摩根大通', changePercent:  15.4, quarter: '2025Q4', signalType: 'increase' },
+    { institutionName: '路博迈',   changePercent:  31.2, quarter: '2025Q4', signalType: 'new' },
+    { institutionName: '联博',     changePercent:  -8.3, quarter: '2025Q4', signalType: 'decrease' },
+  ];
+
+  // 筛选超过阈值的记录
+  const thresholdNum = Number(threshold) || 20;
+  const matched = mockChanges.filter(c => Math.abs(c.changePercent) >= thresholdNum);
+
+  if (matched.length === 0) {
+    return res.json({ success: true, triggered: false, reason: `当前变化幅度均未超过 ${thresholdNum}% 阈值` });
+  }
+
+  // 逐条发送飞书通知
+  const results = [];
+  for (const change of matched) {
+    const result = await sendAlertMessage({
+      stockTicker: ticker,
+      stockName: stockName || ticker,
+      changePercent: change.changePercent,
+      signalType: change.signalType,
+      institutionName: change.institutionName,
+      quarter: change.quarter,
+      thresholdPercent: thresholdNum,
+    });
+    results.push({ institution: change.institutionName, ...result });
+  }
+
+  const allSuccess = results.every(r => r.success);
+  res.json({
+    success: allSuccess,
+    triggered: true,
+    count: results.length,
+    results,
+  });
 });
 
 // Serve frontend in production

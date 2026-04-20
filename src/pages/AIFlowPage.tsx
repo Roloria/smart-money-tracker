@@ -4,7 +4,7 @@
  */
 import { useState } from 'react';
 import { Cpu, Cloud, AppWindow, Bot, Flag, TrendingUp, TrendingDown, ChevronRight, Building2, ExternalLink } from 'lucide-react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+// recharts dynamically imported (see dynamic import pattern in SmartMoney.tsx)
 import { getAIChainSummary, getLayerStats, AI_LAYERS, type AILayer } from '../data/aiChain';
 import { getAllHoldings, getAllChanges, getDataSources, getDataSourceLabel } from '../data/realData';
 import type { Holding } from '../types';

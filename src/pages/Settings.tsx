@@ -91,12 +91,12 @@ export default function SettingsPage() {
         <div className="card-base" style={{padding:24,marginBottom:20}}>
           <div style={{fontSize:14,fontWeight:600,color:'#fafafa',marginBottom:12}}>Smart Money Tracker</div>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,fontSize:12,color:'#71717a'}}>
-            <div><span style={{color:'#52525b'}}>当前版本：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>Phase 6 ✓</span></div>
+            <div><span style={{color:'#52525b'}}>当前版本：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>Phase 8 🚀</span></div>
             <div><span style={{color:'#52525b'}}>数据周期：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>2025 Q4</span></div>
             <div><span style={{color:'#52525b'}}>追踪机构：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>12家全球机构</span></div>
-            <div><span style={{color:'#52525b'}}>下一版本：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>Phase 7</span></div>
+            <div><span style={{color:'#52525b'}}>持仓异动：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>板块/市场双筛</span></div>
           </div>
-          <div style={{marginTop:10,fontSize:12,color:'#3f3f46',lineHeight:1.6}}>Phase 6 ✅：AI产业链 + 小盘股信号 + SEC/HKEX/QFII真实数据。Phase 7 计划：机构持仓预测模型 + 回测模块 + 预警推送增强。</div>
+          <div style={{marginTop:10,fontSize:12,color:'#3f3f46',lineHeight:1.6}}>Phase 8 🚀：机构信心指数（0-100分综合评分）+ 资金流向预测 + 信心等级标签 + recharts首屏按需加载。</div>
         </div>
 
         {/* Save */}

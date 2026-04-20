@@ -22,11 +22,6 @@ const LazyLoader = ({ h = 400 }: { h?: number }) => (
   </div>
 )
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, PieChart, Pie, Cell,
-  LineChart, Line,
-} from 'recharts'
-import {
   institutions, holdings, holdingChanges, alertRules as _defaultAlertRules
 } from '../data/mockData'
 import { getStockPrices, convertCurrency, type StockPrice } from '../lib/stockPrices'
@@ -35,6 +30,7 @@ import {
   getDataSourceLabel, getLastUpdated, getDataSources, getHoldingDataSource,
 } from '../data/realData'
 import AIFlowPage from './AIFlowPage'
+import AIFundFlowPage from './AIFundFlowPage'
 import SmallCapPage from './SmallCapPage'
 import { getAIChainSummary, getSmallCapSignals, AI_LAYERS, getLayerStatsFromHoldings, SMALL_CAP_TRACKED } from '../data/aiChain'
 import type { Institution, Holding, AlertRule, HoldingChange } from '../types'
@@ -442,7 +438,18 @@ function ChangesTable({ changes }: { changes: HoldingChange[] }) {
 }
 
 // ── Market Pie ─────────────────────────────────────────────────────────────────
+// recharts is dynamically imported inside the component to avoid loading it on first paint
 function MarketPie({ holdings }: { holdings: Holding[] }) {
+  const [chartComponents, setChartComponents] = useState<{
+    PieChart: any; Pie: any; Cell: any
+  } | null>(null);
+
+  useEffect(() => {
+    import('recharts').then(m => {
+      setChartComponents({ PieChart: m.PieChart, Pie: m.Pie, Cell: m.Cell });
+    });
+  }, []);
+
   const data = [
     { name: '美国 🇺🇸', value: holdings.filter((h: Holding) => h.market === 'US').reduce((s: number, h: Holding) => s + h.marketValue, 0) },
     { name: '香港 🇭🇰', value: holdings.filter((h: Holding) => h.market === 'HK').reduce((s: number, h: Holding) => s + h.marketValue, 0) },
@@ -451,6 +458,10 @@ function MarketPie({ holdings }: { holdings: Holding[] }) {
   const total = data.reduce((s: number, d) => s + d.value, 0)
   const COLORS = [C.blue, C.yellow, C.red]
   if (total === 0) return <div style={{ color: C.text3, fontSize: 12 }}>暂无数据</div>
+  if (!chartComponents) {
+    return <div style={{ height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Loader2 size={20} color={C.blue} style={{ animation: 'spin 1s linear infinite' }} /></div>
+  }
+  const { PieChart, Pie, Cell } = chartComponents;
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
       <PieChart width={120} height={120}>
@@ -474,18 +485,45 @@ function MarketPie({ holdings }: { holdings: Holding[] }) {
 }
 
 // ── Changes Bar ────────────────────────────────────────────────────────────────
+// recharts is dynamically imported inside the component to avoid loading it on first paint
 function ChangesBar({ changes }: { changes: HoldingChange[] }) {
+  const [chartComponents, setChartComponents] = useState<{
+    ResponsiveContainer: any; BarChart: any; Bar: any;
+    XAxis: any; YAxis: any; CartesianGrid: any; Tooltip: any; Cell: any;
+  } | null>(null);
+
+  useEffect(() => {
+    import('recharts').then(m => {
+      setChartComponents({
+        ResponsiveContainer: m.ResponsiveContainer,
+        BarChart: m.BarChart,
+        Bar: m.Bar,
+        XAxis: m.XAxis,
+        YAxis: m.YAxis,
+        CartesianGrid: m.CartesianGrid,
+        Tooltip: m.Tooltip,
+        Cell: m.Cell,
+      });
+    });
+  }, []);
+
   const data = [...changes]
     .sort((a: HoldingChange, b: HoldingChange) => Math.abs(b.changePercent) - Math.abs(a.changePercent))
     .slice(0, 8)
     .map((c: HoldingChange) => ({ ticker: c.stockTicker, pct: c.changePercent }))
+
+  if (!chartComponents) {
+    return <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Loader2 size={20} color={C.blue} style={{ animation: 'spin 1s linear infinite' }} /></div>
+  }
+
+  const { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } = chartComponents;
 
   return (
     <ResponsiveContainer width="100%" height={200}>
       <BarChart data={data} margin={{ left: -10 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#1e2030" />
         <XAxis dataKey="ticker" tick={{ fill: '#64748b', fontSize: 11, fontFamily: 'JetBrains Mono' }} />
-        <YAxis tick={{ fill: '#64748b', fontSize: 11, fontFamily: 'JetBrains Mono' }} tickFormatter={v => `${v}%`} />
+        <YAxis tick={{ fill: '#64748b', fontSize: 11, fontFamily: 'JetBrains Mono' }} tickFormatter={(v: number) => `${v}%`} />
         <Tooltip
           contentStyle={{ backgroundColor: '#13141f', border: '1px solid #1e2030', borderRadius: 8, fontSize: 12 }}
           formatter={(val: any) => [typeof val === 'number' ? `${val > 0 ? '+' : ''}${val.toFixed(2)}%` : val, '变化']}
@@ -501,7 +539,7 @@ function ChangesBar({ changes }: { changes: HoldingChange[] }) {
 }
 
 // ── App ────────────────────────────────────────────────────────────────────────
-type Tab = 'overview' | 'institutions' | 'search' | 'changes' | 'alerts' | 'ai' | 'rankings' | 'overlap' | 'mine' | 'smallcap' | 'settings'
+type Tab = 'overview' | 'institutions' | 'search' | 'changes' | 'alerts' | 'ai' | 'rankings' | 'overlap' | 'mine' | 'smallcap' | 'fundflow' | 'settings'
 const NAV: { key: Tab; label: string; icon: any }[] = [
   { key: 'overview', label: '总览', icon: BarChart3 },
   { key: 'institutions', label: '机构', icon: Building2 },
@@ -513,6 +551,7 @@ const NAV: { key: Tab; label: string; icon: any }[] = [
   { key: 'overlap', label: '持仓重叠', icon: BarChart3 },
   { key: 'mine', label: '我的持仓', icon: Wallet },
   { key: 'smallcap', label: '小盘股', icon: Star },
+  { key: 'fundflow', label: 'AI资金流向', icon: TrendingUp },
   { key: 'settings', label: '设置', icon: Settings },
 ]
 
@@ -551,6 +590,9 @@ export default function SmartMoney() {
 
   useEffect(() => {
     refreshPrices()
+    // Auto-refresh every 5 minutes to keep live prices current
+    const interval = setInterval(refreshPrices, 5 * 60 * 1000)
+    return () => clearInterval(interval)
   }, [])
 
   // ── Data status ─────────────────────────────────────────────────────────────
@@ -703,10 +745,23 @@ export default function SmartMoney() {
                 cursor: pricesLoading ? 'not-allowed' : 'pointer',
                 fontWeight: 600,
                 transition: 'all 0.2s',
+                position: 'relative',
               }}
             >
+              {!pricesLoading && !pricesError && (
+                <span style={{
+                  width: 6, height: 6, borderRadius: '50%',
+                  background: C.green, display: 'inline-block',
+                  marginRight: 3,
+                  boxShadow: `0 0 0 2px ${C.green}30`,
+                  animation: 'livePulse 2s ease-in-out infinite',
+                }} />
+              )}
               <RefreshCw size={11} style={pricesLoading ? { animation: 'spin 1s linear infinite' } : {}} />
               {pricesLoading ? '刷新中…' : pricesError ? '重试价格' : '刷新价格'}
+              {!pricesLoading && !pricesError && lastPriceUpdate !== '—' && (
+                <span style={{ fontSize: 9, color: C.text3, marginLeft: 2 }}>· {lastPriceUpdate}</span>
+              )}
             </button>
           </div>
         </div>
@@ -1237,6 +1292,7 @@ export default function SmartMoney() {
         {tab === 'overlap' && <Suspense fallback={<LazyLoader />}><InstitutionOverlap /></Suspense>}
         {tab === 'mine' && <Suspense fallback={<LazyLoader />}><KevinPortfolio /></Suspense>}
         {tab === 'smallcap' && <SmallCapPage />}
+        {tab === 'fundflow' && <AIFundFlowPage />}
         {tab === 'settings' && (
           <div style={{ maxWidth: 680 }}>
             <h2 style={{ fontSize: 20, fontWeight: 700, color: C.text, margin: '0 0 24px' }}>设置</h2>
@@ -1306,6 +1362,14 @@ export default function SmartMoney() {
       {showDataSourcePanel && (
         <Suspense fallback={<LazyLoader h={500} />}><DataSourcePanel onClose={() => setShowDataSourcePanel(false)} /></Suspense>
       )}
+
+      <style>{`
+        @keyframes livePulse {
+          0%, 100% { opacity: 1; box-shadow: 0 0 0 2px #22c55e30; }
+          50% { opacity: 0.6; box-shadow: 0 0 0 4px #22c55e10; }
+        }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+      `}</style>
     </div>
   )
 }

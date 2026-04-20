@@ -5,7 +5,7 @@
  */
 import { useState } from 'react';
 import { Star, TrendingUp, TrendingDown, Clock, Building2, ExternalLink } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+// recharts dynamically imported (see dynamic import pattern in SmartMoney.tsx)
 import { getSmallCapSignals, SMALL_CAP_TRACKED } from '../data/aiChain';
 import { getAllHoldings, getDataSources } from '../data/realData';
 import type { Holding } from '../types';
