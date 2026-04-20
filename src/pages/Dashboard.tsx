@@ -80,9 +80,19 @@ export default function Dashboard() {
               <span style={{ fontSize: 11, fontWeight: 700, color: sentimentColor }}>{sentimentLabel}</span>
             </div>
             {/* Data freshness */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, color: '#52525b' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 10, color: '#52525b' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <div style={{
+                  width: 6, height: 6, borderRadius: '50%',
+                  background: '#22c55e', boxShadow: '0 0 4px #22c55e60',
+                }} />
+                <span>实时</span>
+              </div>
+              <span style={{ color: '#27272a' }}>|</span>
               <Clock size={10} />
-              <span>数据来源：SEC EDGAR · 2025 Q4</span>
+              <span>{new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })} 北京时间</span>
+              <span style={{ color: '#27272a' }}>|</span>
+              <span>SEC EDGAR · 2025 Q4</span>
             </div>
           </div>
         </div>
