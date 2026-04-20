@@ -3,6 +3,7 @@
  * Phase 6: 每个产业链模块的机构持仓、异动统计、二跳详情
  */
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Cpu, Cloud, AppWindow, Bot, Flag, TrendingUp, TrendingDown, ChevronRight, Building2, ExternalLink } from 'lucide-react';
 // recharts dynamically imported (see dynamic import pattern in SmartMoney.tsx)
 import { getAIChainSummary, getLayerStats, AI_LAYERS, type AILayer } from '../data/aiChain';
@@ -127,6 +128,7 @@ function LayerModuleCard({ layer, stats, onClick }: {
 
 // 二跳：个股详情
 function StockDetailPanel({ layerKey }: { layerKey: AILayer }) {
+  const navigate = useNavigate();
   const layer = AI_LAYERS.find(l => l.layer === layerKey)!;
   const Icon = LAYER_ICONS[layerKey];
   const holdings = getAllHoldings().filter(h =>
@@ -142,7 +144,7 @@ function StockDetailPanel({ layerKey }: { layerKey: AILayer }) {
     <div>
       {/* 返回按钮 */}
       <button
-        onClick={() => history.back()}
+        onClick={() => navigate(-1)}
         style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', background: 'transparent', border: `1px solid ${C.border}`, borderRadius: 8, cursor: 'pointer', color: C.text3, fontSize: 12, marginBottom: 16 }}
       >
         ← 返回产业链
