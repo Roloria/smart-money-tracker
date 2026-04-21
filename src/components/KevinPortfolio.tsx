@@ -65,12 +65,11 @@ const INVESTED_CAPITAL = TOTAL_CAPITAL * INVESTED_RATIO;
 const FX: Record<string, number> = { CNY: 1, HKD: 0.93, USD: 7.25 };
 
 // Kevin 真实持仓（来源：Signal Arena 实盘记录 · 2026-04-21 更新）
-// 持仓变动：清仓小米/美团/安克创新；泡泡玛特加至25万；新建天齐锂业/润泽科技；世纪华通加至18万
+// 持仓：腾讯15万/泡泡玛特25万/天齐10万/润泽10万；现金15万（25%未入场）
 const KEVIN_HOLDINGS: Holding[] = [
-  { ticker: '00700.HK', name: '腾讯控股',   market: 'HK', shares: null, cost: null, sector: '互联网/AI',     allocation: 0.130 },
-  { ticker: '09992.HK', name: '泡泡玛特',   market: 'HK', shares: null, cost: null, sector: '消费/潮玩',     allocation: 0.417 },
-  { ticker: '002466.SZ', name: '天齐锂业',  market: 'CN', shares: null, cost: null, sector: '锂电/能源',     allocation: 0.167 },
-  { ticker: '002602.SZ', name: '世纪华通',  market: 'CN', shares: null, cost: null, sector: '游戏/AI算力',   allocation: 0.300 },
+  { ticker: '00700.HK',  name: '腾讯控股',  market: 'HK', shares: null, cost: null, sector: '互联网/AI',   allocation: 0.250 },
+  { ticker: '09992.HK',  name: '泡泡玛特',  market: 'HK', shares: null, cost: null, sector: '消费/潮玩',  allocation: 0.417 },
+  { ticker: '002466.SZ', name: '天齐锂业',  market: 'CN', shares: null, cost: null, sector: '锂电/能源',  allocation: 0.167 },
   { ticker: '300442.SZ', name: '润泽科技',  market: 'CN', shares: null, cost: null, sector: 'IDC/数据中心', allocation: 0.167 },
 ];
 
