@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Globe, Filter, Clock } from 'lucide-react';
 import { institutions, formatNumber, typeLabels, typeColors } from '../data/mockData';
 import { holdings as mockHoldings } from '../data/mockData';
-import { getAllHoldings } from '../data/realData';
+import { getAllHoldings, ALL_CHANGES } from '../data/realData';
 import { getInstitutionSourceInfo } from '../data/realData';
 
 const C = {
@@ -27,12 +27,54 @@ export default function Institutions() {
   const [activeFilter, setActiveFilter] = useState('全部');
   const typeKey = filterMap[activeFilter];
   const filtered = typeKey ? institutions.filter(i => i.type === typeKey) : institutions;
+  const allChanges = ALL_CHANGES;
+  const instChangeMap = new Map<number, number>();
+  for (const c of allChanges) {
+    const prev = instChangeMap.get(c.institutionId) || 0;
+    instChangeMap.set(c.institutionId, prev + (c.changePercent || 0));
+  }
+  const totalMV = filtered.reduce((s, i) => s + (i.totalValue || 0), 0);
+  const changes = filtered.map(i => instChangeMap.get(i.id) || 0);
+  const avgChange = changes.length > 0 ? changes.reduce((a, b) => a + b, 0) / changes.length : 0;
+  const gains = changes.filter(v => v > 0).length;
+  const losses = changes.filter(v => v < 0).length;
+  const sentColor = avgChange > 5 ? C.green : avgChange > 0 ? '#a3e635' : avgChange > -5 ? C.yellow : C.red;
+
 
   return (
     <div>
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ fontSize: 24, fontWeight: 700, color: '#fafafa', margin: 0 }}>机构列表</h1>
         <p style={{ fontSize: 14, color: '#71717a', margin: '4px 0 0' }}>浏览所有追踪的机构及其最新持仓</p>
+      </div>
+
+
+      {/* Global Sentiment Summary */}
+      <div style={{
+        display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 12, marginBottom: 28,
+        background: "#141414", border: "1px solid #1e1e1e",
+        borderRadius: 14, padding: "14px 18px",
+      }}>
+        <div style={{textAlign:"center"}}>
+          <div style={{fontSize:18,fontWeight:800,color:"#fafafa",fontFamily:"JetBrains Mono,monospace"}}>{filtered.length}家</div>
+          <div style={{fontSize:10,color:"#52525b",marginTop:2}}>追踪机构</div>
+        </div>
+        <div style={{textAlign:"center"}}>
+          <div style={{fontSize:18,fontWeight:800,color:"#fafafa",fontFamily:"JetBrains Mono,monospace"}}>{totalMV>0?(totalMV/1e12).toFixed(2)+"T":"—"}</div>
+          <div style={{fontSize:10,color:"#52525b",marginTop:2}}>总持仓(USD)</div>
+        </div>
+        <div style={{textAlign:"center"}}>
+          <div style={{fontSize:18,fontWeight:800,color:sentColor,fontFamily:"JetBrains Mono,monospace"}}>{avgChange>0?"+":""}{avgChange.toFixed(1)}%</div>
+          <div style={{fontSize:10,color:"#52525b",marginTop:2}}>平均变化</div>
+        </div>
+        <div style={{textAlign:"center"}}>
+          <div style={{fontSize:18,fontWeight:800,color:C.green,fontFamily:"JetBrains Mono,monospace"}}>{gains}</div>
+          <div style={{fontSize:10,color:"#52525b",marginTop:2}}>上涨机构</div>
+        </div>
+        <div style={{textAlign:"center"}}>
+          <div style={{fontSize:18,fontWeight:800,color:C.red,fontFamily:"JetBrains Mono,monospace"}}>{losses}</div>
+          <div style={{fontSize:10,color:"#52525b",marginTop:2}}>下跌机构</div>
+        </div>
       </div>
 
       {/* Filters */}
