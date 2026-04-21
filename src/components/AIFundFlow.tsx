@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { TrendingUp, TrendingDown, AlertTriangle, Star, ArrowUp, ArrowDown, Minus } from 'lucide-react'
 import { institutions, holdings, holdingChanges } from '../data/mockData'
 import { getAllHoldings, getAllChanges } from '../data/realData'
@@ -381,6 +381,16 @@ export default function AIFundFlow() {
             .sort((a, b) => b.score - a.score)
         })()
 
+        // Market filter
+        const [marketFilter, setMarketFilter] = useState<'ALL'|'US'|'HK'|'CN'>('ALL');
+        const _MFILTER = (ticker: string) => {
+          if (marketFilter === 'ALL') return true;
+          if (ticker.includes('.HK')) return marketFilter === 'HK';
+          if (/^\d{6}$/.test(ticker)) return marketFilter === 'CN';
+          return marketFilter === 'US';
+        };
+        const filteredConviction = convictionData.filter(e => _MFILTER(e.ticker));
+
         const levelConfig: Record<string, { label: string; color: string; bg: string; border: string }> = {
           strong:   { label: '高信心',  color: '#22c55e', bg: '#22c55e15', border: '#22c55e50' },
           moderate: { label: '中信心',  color: '#38bdf8', bg: '#38bdf815', border: '#38bdf850' },
@@ -404,13 +414,25 @@ export default function AIFundFlow() {
               <span style={{ fontSize: 11, color: C.text3, marginLeft: 4 }}>
                 基于机构数量·变化幅度·持仓市值综合计算
               </span>
-              <span style={{
-                marginLeft: 'auto', fontSize: 10, color: C.text3,
-                background: '#0d0d0d', border: `1px solid ${C.border}`,
-                padding: '2px 8px', borderRadius: 20,
-              }}>
-                Top {convictionData.length} 标的
-              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginLeft: 'auto', flexWrap: 'wrap' }}>
+                {(['全部','🇺🇸美','🇭🇰港','🇨🇳A'] as const).map((lbl, idx) => {
+                  const key = (['ALL','US','HK','CN'] as const)[idx];
+                  const colors = ['#a1a1aa','#38bdf8','#facc15','#f87171'];
+                  const active = marketFilter === key;
+                  return (
+                    <button key={key} onClick={() => setMarketFilter(key)}
+                      style={{ padding: '2px 8px', borderRadius: 5, fontSize: 10, fontWeight: 700,
+                        background: active ? colors[idx] + '20' : 'transparent',
+                        color: active ? colors[idx] : '#52525b',
+                        border: `1px solid ${active ? colors[idx] + '50' : '#1e1e1e'}`,
+                        cursor: 'pointer', transition: 'all 0.15s' }}
+                    >{lbl}</button>
+                  );
+                })}
+                <span style={{ fontSize: 10, color: C.text3, background: '#0d0d0d', border: `1px solid #1e1e1e`, padding: '2px 8px', borderRadius: 20 }}>
+                  Top {filteredConviction.length}
+                </span>
+              </div>
             </div>
 
             {/* Table Header */}
@@ -429,7 +451,7 @@ export default function AIFundFlow() {
             </div>
 
             {/* Rows */}
-            {convictionData.slice(0, 20).map((entry, i) => {
+            {filteredConviction.slice(0, 20).map((entry, i) => {
               const lv = levelConfig[entry.convictionLevel]
               const scoreBarW = entry.score
               const barColor = entry.convictionLevel === 'strong' ? C.green
