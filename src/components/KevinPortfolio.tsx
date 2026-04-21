@@ -1,7 +1,8 @@
 /**
  * KevinPortfolio — Kevin 真实持仓追踪
  * 显示 Kevin 个人持仓与聪明钱机构持仓的对比分析
- * 数据来源：MEMORY.md Investment Portfolio（2026-04-21）
+ * 数据来源：Signal Arena 实盘记录（2026-04-21 更新）
+ * 持仓变动：清仓小米/美团/安克创新；泡泡玛特加至25万；新建天齐锂业/润泽科技；世纪华通加至18万
  * Signal Arena 实盘记录（2026-04-17）
  * 最新代码更新：v22（2026-04-21 — AI 持仓诊断面板）
  * 版本同步：v23 注释更新（2026-04-21 04:00 AM）
@@ -63,13 +64,14 @@ const INVESTED_CAPITAL = TOTAL_CAPITAL * INVESTED_RATIO;
 
 const FX: Record<string, number> = { CNY: 1, HKD: 0.93, USD: 7.25 };
 
-// Kevin 真实持仓（来源：MEMORY.md Investment Portfolio 2026-04-18）
+// Kevin 真实持仓（来源：Signal Arena 实盘记录 · 2026-04-21 更新）
+// 持仓变动：清仓小米/美团/安克创新；泡泡玛特加至25万；新建天齐锂业/润泽科技；世纪华通加至18万
 const KEVIN_HOLDINGS: Holding[] = [
-  { ticker: '01810.HK', name: '小米集团',  market: 'HK', shares: null, cost: null, sector: 'AI硬件/新能源', allocation: 0.391 },
-  { ticker: '300866',   name: '安克创新',  market: 'CN', shares: null, cost: null, sector: '消费电子/出海', allocation: 0.246 },
-  { ticker: '00700.HK', name: '腾讯控股',  market: 'HK', shares: null, cost: null, sector: '互联网/AI',      allocation: 0.130 },
-  { ticker: '03690.HK', name: '美团',      market: 'HK', shares: null, cost: null, sector: '本地生活/外卖', allocation: 0.116 },
-  { ticker: '09992.HK', name: '泡泡玛特',  market: 'HK', shares: null, cost: null, sector: '消费/潮玩',      allocation: 0.116 },
+  { ticker: '00700.HK', name: '腾讯控股',   market: 'HK', shares: null, cost: null, sector: '互联网/AI',     allocation: 0.130 },
+  { ticker: '09992.HK', name: '泡泡玛特',   market: 'HK', shares: null, cost: null, sector: '消费/潮玩',     allocation: 0.417 },
+  { ticker: '002466.SZ', name: '天齐锂业',  market: 'CN', shares: null, cost: null, sector: '锂电/能源',     allocation: 0.167 },
+  { ticker: '002602.SZ', name: '世纪华通',  market: 'CN', shares: null, cost: null, sector: '游戏/AI算力',   allocation: 0.300 },
+  { ticker: '300442.SZ', name: '润泽科技',  market: 'CN', shares: null, cost: null, sector: 'IDC/数据中心', allocation: 0.167 },
 ];
 
 // ── AI 诊断引擎（规则引擎，无需 AI API）─────────────────────────────────────
@@ -89,11 +91,11 @@ function runDiagnosis(): DiagnosisResult {
 
   // 合并 Kevin 板块 into 兼容 groups
   const SECTOR_MAP: Record<string, string> = {
-    'AI硬件/新能源': '科技',
-    '消费电子/出海': '消费',
-    '互联网/AI': '科技',
-    '本地生活/外卖': '消费',
-    '消费/潮玩': '消费',
+    '互联网/AI':     '科技',
+    '消费/潮玩':     '消费',
+    '锂电/能源':     '能源',
+    '游戏/AI算力':   '科技',
+    'IDC/数据中心':  '科技',
   };
 
   const sectorDiagnoses: SectorDiagnosis[] = [];
