@@ -497,14 +497,14 @@ export default function KevinPortfolio() {
             background: `${C.purple}12`, border: `1px solid ${C.purple}30`,
             fontSize: 11, fontWeight: 600, color: C.purple,
           }}>
-            Yahoo Finance
+            Yahoo Finance ⚠️
           </div>
           <div style={{
             padding: '4px 10px', borderRadius: 8,
             background: `${C.blue}12`, border: `1px solid ${C.blue}30`,
             fontSize: 11, fontWeight: 700, color: C.blue,
           }}>
-            总仓位 ~96%
+            总仓位 ~97%
           </div>
         </div>
       </div>
@@ -646,7 +646,7 @@ export default function KevinPortfolio() {
 
       {/* Footer */}
       <div style={{ fontSize: 11, color: C.text3, lineHeight: 1.7 }}>
-        <span style={{ color: C.purple, fontWeight: 600 }}>行情数据：</span>Yahoo Finance（🇭🇰港股/🇨🇳A股）· <span style={{ color: C.blue, fontWeight: 600 }}>持仓配置：</span>Signal Arena（2026-04-12建仓）· <span style={{ color: C.yellow, fontWeight: 600 }}>成本基准：</span>参考均价 · 总资金 ¥60万 · 汇率：USD/CNY 7.25、HKD/CNY 0.93 · 不构成投资建议
+        <span style={{ color: C.purple, fontWeight: 600 }}>行情数据：</span>Yahoo Finance（🇭🇰港股/🇨🇳A股）· <span style={{ color: C.blue, fontWeight: 600 }}>持仓配置：</span>Signal Arena（2026-04-21更新）· <span style={{ color: C.yellow, fontWeight: 600 }}>成本基准：</span>参考均价 · 总资金 ¥60万（实际 ¥78万）· 汇率：USD/CNY 7.25、HKD/CNY 0.93 · 不构成投资建议
       </div>
 
       <style>{`
