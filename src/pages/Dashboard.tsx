@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { TrendingUp, TrendingDown, Building2, DollarSign, Activity, ArrowUpRight, ArrowDownRight, Star, Clock, TrendingUpCircle } from 'lucide-react';
 import { institutions, holdings, holdingChanges, formatNumber, formatPercent, typeLabels, typeColors } from '../data/mockData';
@@ -44,6 +44,13 @@ function MarketStatus() {
 }
 
 export default function Dashboard() {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 30000);
+    return () => clearInterval(t);
+  }, []);
+
+  const shanghaiTime = now.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
   const instCount = institutions.length;                              // 动态计算，避免硬编码
   const totalValue = institutions.reduce((sum, i) => sum + i.totalValue, 0);
   const totalIncreases = holdings.filter(h => h.changePercent > 0).length;
@@ -90,9 +97,9 @@ export default function Dashboard() {
               </div>
               <span style={{ color: '#27272a' }}>|</span>
               <Clock size={10} />
-              <span>{new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })} 北京时间</span>
+              <span>{shanghaiTime} 北京时间</span>
               <span style={{ color: '#27272a' }}>|</span>
-              <span>SEC EDGAR · 2025 Q4</span>
+              <span>SEC EDGAR · 2026 Q1</span>
             </div>
           </div>
         </div>
