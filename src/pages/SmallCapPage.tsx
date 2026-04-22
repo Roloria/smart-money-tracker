@@ -148,8 +148,8 @@ function StockDetailPanel({ ticker }: { ticker: string }) {
               </span>
               <SourceTag source={(holdings[0] as any)._dataSource || 'MOCK'} />
             </div>
-            <div style={{ fontSize: 12, color: C.text3, marginBottom: 4 }}>{meta?.notes}</div>
-            <div style={{ fontSize: 11, color: C.text3 }}>市值：{meta?.marketCap}亿美元</div>
+            {meta?.notes && <div style={{ fontSize: 12, color: C.text2, marginBottom: 4 }}>{meta.notes}</div>}
+            {meta?.marketCap && <div style={{ fontSize: 11, color: C.text3 }}>市值：{meta.marketCap}亿美元</div>}
           </div>
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontSize: 28, fontWeight: 900, fontFamily: 'JetBrains Mono, monospace', color: C.text }}>{fmt$(totalValue)}</div>
@@ -212,14 +212,14 @@ function StockDetailPanel({ ticker }: { ticker: string }) {
 
       {/* 机构异动历史 */}
       <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, padding: 20 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: C.text, marginBottom: 14 }}>季度异动历史</div>
+        <div style={{ fontSize: 13, fontWeight: 600, color: C.text, marginBottom: 14 }}>机构异动（来自真实持仓数据）</div>
         <div style={{ display: 'flex', gap: 6 }}>
-          {[1, 0.8, -0.5, 0.3].map((change, i) => (
-            <div key={i} style={{ flex: 1, background: '#0d0d0d', borderRadius: 8, padding: '10px 8px', textAlign: 'center' }}>
-              <div style={{ fontSize: 12, fontWeight: 700, fontFamily: 'JetBrains Mono, monospace', color: change >= 0 ? C.green : C.red }}>
-                {change >= 0 ? '+' : ''}{change.toFixed(1)}%
+          {holdings.slice(0, 4).map((h, i) => (
+            <div key={h.id} style={{ flex: 1, background: '#0d0d0d', borderRadius: 8, padding: '10px 8px', textAlign: 'center' }}>
+              <div style={{ fontSize: 12, fontWeight: 700, fontFamily: 'JetBrains Mono, monospace', color: h.changePercent >= 0 ? C.green : C.red }}>
+                {h.changePercent >= 0 ? '+' : ''}{h.changePercent.toFixed(1)}%
               </div>
-              <div style={{ fontSize: 9, color: C.text3, marginTop: 2 }}>Q{4 - i + 1}</div>
+              <div style={{ fontSize: 9, color: C.text3, marginTop: 2 }}>机构{h.institutionId}</div>
             </div>
           ))}
         </div>
