@@ -2,9 +2,8 @@
  * KevinPortfolio — Kevin 真实持仓追踪
  * 显示 Kevin 个人持仓与聪明钱机构持仓的对比分析
  * 数据来源：Signal Arena 实盘记录（2026-04-21 更新）
- * 持仓变动：清仓小米/美团/安克创新；泡泡玛特加至25万；新建天齐锂业/润泽科技；世纪华通加至18万
- * 最新代码更新：v21（2026-04-22 — 进化清理版本注释）
- * git commit: 55adbd9（Institutions情绪晴雨表）
+ * 持仓：泡泡玛特25万/腾讯15万/天齐10万/润泽10万/世纪华通18万；现金2万
+ * git commit: 1e954cb（v22 进化修复）
  */
 
 import { useState, useEffect } from 'react';

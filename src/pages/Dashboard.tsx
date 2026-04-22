@@ -18,7 +18,7 @@ function MarketStatus() {
   const usOpen = isWeekday && ((shanghaiHour > 21 || (shanghaiHour === 21 && utcMin >= 30)) || shanghaiHour < 4);
 
   // HK market: 9:30-16:00 HKT = 1:30-8:00 Shanghai
-  const hkOpen = isWeekday && shanghaiHour >= 1 && shanghaiHour < 4;
+  const hkOpen = isWeekday && ((shanghaiHour > 1 || (shanghaiHour === 1 && utcMin >= 30)) && shanghaiHour < 8);
 
   // CN market: 9:30-15:00 CST = 9:30-15:00 Shanghai (no offset)
   const cnOpen = isWeekday && shanghaiHour >= 9 && shanghaiHour < 15;

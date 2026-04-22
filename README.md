@@ -2,7 +2,7 @@
 
 > 追踪全球顶级主权基金与对冲机构的真实持仓，让散户也能跟踪"聪明钱"的流向
 
-**线上地址：** https://a5i8idrbhy57.space.minimaxi.com（v21 · Phase 8 · 进化修复版本）
+**线上地址：** https://xysxcrmenmxt.space.minimaxi.com（v21 · Phase 8 · 进化修复版本）
 
 > v22 新增：**💡 AI 持仓诊断** — 规则引擎分析 Kevin 个人持仓，对比机构平均配置，输出超配/低配信号 + 集中度风险 + 3条文字建议 + 纯 CSS 板块对比图
 
