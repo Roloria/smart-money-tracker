@@ -3,7 +3,7 @@
  * 显示 Kevin 个人持仓与聪明钱机构持仓的对比分析
  * 数据来源：Signal Arena 实盘记录（2026-04-21 更新）
  * 持仓：泡泡玛特25万/腾讯15万/天齐10万/润泽10万/世纪华通18万；现金2万
- * git commit: 1e954cb（v22 进化修复）
+ * git commit: 9f143e1（v23 Settings版本修复）
  */
 
 import { useState, useEffect } from 'react';
