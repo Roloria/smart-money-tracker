@@ -179,6 +179,14 @@ export default function Changes() {
           <div style={{textAlign:'center',padding:'40px 0',color:'#52525b',fontSize:14}}>暂无符合条件的异动记录</div>
         )}
       </div>
+
+      {/* Footer: data source info */}
+      <div style={{display:'flex',alignItems:'center',justifyContent:'flex-end',gap:8,marginTop:16,padding:'0 4px'}}>
+        <span style={{fontSize:10,color:'#52525b',fontFamily:'JetBrains Mono,monospace'}}>数据来源</span>
+        <span style={{fontSize:10,color:'#38bdf8',fontFamily:'JetBrains Mono,monospace',fontWeight:600}}>SEC EDGAR 13F · 东方财富 QFII · 港交所披露易</span>
+        <span style={{fontSize:10,color:'#3f3f46'}}>|</span>
+        <span style={{fontSize:10,color:'#52525b',fontFamily:'JetBrains Mono,monospace'}}>2026 Q1</span>
+      </div>
     </div>
   );
 }
