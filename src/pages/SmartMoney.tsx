@@ -809,7 +809,7 @@ export default function SmartMoney() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 14, marginBottom: 14 }} data-stat-grid>
               <StatCard icon={Building2} label="覆盖机构" value={`${institutions.length}家`} sub="全球顶级主权 & 机构基金" color={C.blue} />
               <StatCard icon={DollarSign} label="实时持仓总值" value={fmt$(liveTotal)} sub={liveCount > 0 ? `${liveCount}/${totalTickers}只已实时报价` : '加载中…'} color={C.green} />
-              <StatCard icon={BarChart3} label="披露持仓市值" value={fmt$(stats.totalValue)} sub="2026 Q1 披露值" color={C.yellow} />
+              <StatCard icon={BarChart3} label="披露持仓市值" value={fmt$(stats.totalValue)} sub="2026 Q1 数据" color={C.yellow} />
               <StatCard icon={TrendingUp} label="本季增持王" value={stats.topGainer.ticker} sub={`${stats.topGainer.institution} · ${pct(stats.topGainer.change)}`} color={C.green} />
               <StatCard icon={TrendingDown} label="本季减持王" value={stats.topLoser.ticker} sub={`${stats.topLoser.institution} · ${pct(stats.topLoser.change)}`} color={C.red} />
             </div>

@@ -2,12 +2,16 @@ import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Globe, TrendingUp, PieChart, BarChart3 } from 'lucide-react';
 import { PieChart as RePieChart, Pie, Cell, Tooltip, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
-import { institutions, holdings, formatNumber, formatPercent, formatShares, typeLabels, typeColors } from '../data/mockData';
+import { institutions, formatNumber, formatPercent, formatShares, typeLabels, typeColors } from '../data/mockData';
+import { getAllHoldings } from '../data/realData';
+import type { Holding } from '../types';
+
+const ALL_HOLDINGS = getAllHoldings();
 
 const quarters = ['2026Q1', '2025Q4', '2025Q3', '2025Q2', '2025Q1', '2024Q4', '2024Q3', '2024Q2', '2024Q1'];
 const COLORS = ['#38bdf8', '#22c55e', '#f59e0b', '#f43f5e', '#a78bfa', '#84cc16', '#e879f9', '#fb923c'];
 
-function makeLineData(instId: number, allHoldings: typeof holdings) {
+function makeLineData(instId: number, allHoldings: Holding[]) {
   const base = allHoldings.filter(h => h.institutionId === instId);
   const sectors = [...new Set(base.map(h => h.sector))];
   const sectorMap: Record<string, number[]> = {};
@@ -26,14 +30,14 @@ export default function InstitutionDetail() {
   const { id } = useParams();
   const instId = Number(id);
   const inst = institutions.find(i => i.id === instId)!;
-  const instHoldings = holdings.filter(h => h.institutionId === instId);
+  const instHoldings = ALL_HOLDINGS.filter((h: typeof ALL_HOLDINGS[0]) => h.institutionId === instId);
   const [selectedQuarter, setSelectedQuarter] = useState('2026Q1');
   if (!inst) return <div style={{color:'#ef4444',padding:40}}>机构未找到</div>;
   const sortedHoldings = [...instHoldings].sort((a, b) => b.marketValue - a.marketValue);
   const sectorMap: Record<string, number> = {};
   instHoldings.forEach(h => { sectorMap[h.sector] = (sectorMap[h.sector] || 0) + h.marketValue; });
   const pieData = Object.entries(sectorMap).map(([name, value]) => ({ name, value }));
-  const { line: lineData, sectors } = makeLineData(instId, holdings);
+  const { line: lineData, sectors } = makeLineData(instId, ALL_HOLDINGS);
 
   return (
     <div>
@@ -122,6 +126,14 @@ export default function InstitutionDetail() {
             {sectors.map((s,i) => <Line key={s} type="monotone" dataKey={s} stroke={COLORS[i%COLORS.length]} strokeWidth={2} dot={false} />)}
           </LineChart>
         </ResponsiveContainer>
+      </div>
+
+      {/* Footer: data source */}
+      <div style={{display:'flex',alignItems:'center',justifyContent:'flex-end',gap:8,marginTop:20,padding:'0 4px'}}>
+        <span style={{fontSize:10,color:'#52525b',fontFamily:'JetBrains Mono,monospace'}}>数据来源</span>
+        <span style={{fontSize:10,color:'#38bdf8',fontFamily:'JetBrains Mono,monospace',fontWeight:600}}>SEC EDGAR 13F · 港交所披露易 · 东方财富 QFII</span>
+        <span style={{fontSize:10,color:'#3f3f46'}}>|</span>
+        <span style={{fontSize:10,color:'#52525b',fontFamily:'JetBrains Mono,monospace'}}>2026 Q1</span>
       </div>
     </div>
   );

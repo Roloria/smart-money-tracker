@@ -88,14 +88,14 @@ export default function SettingsPage() {
 
         {/* About */}
         <div className="card-base" style={{padding:24,marginBottom:20}}>
-          <div style={{fontSize:14,fontWeight:600,color:'#fafafa',marginBottom:12}}>Smart Money Tracker v23 ⚡</div>
+          <div style={{fontSize:14,fontWeight:600,color:'#fafafa',marginBottom:12}}>Smart Money Tracker v24 ⚡</div>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,fontSize:12,color:'#71717a'}}>
-            <div><span style={{color:'#52525b'}}>当前版本：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>v23 ⚡</span></div>
+            <div><span style={{color:'#52525b'}}>当前版本：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>v24 ⚡</span></div>
             <div><span style={{color:'#52525b'}}>数据周期：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>2026 Q1</span></div>
             <div><span style={{color:'#52525b'}}>追踪机构：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>12家全球机构</span></div>
-            <div><span style={{color:'#52525b'}}>持仓异动：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>板块/市场双筛</span></div>
+            <div><span style={{color:'#52525b'}}>数据来源：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>全页面覆盖</span></div>
           </div>
-          <div style={{marginTop:10,fontSize:12,color:'#3f3f46',lineHeight:1.6}}>v23 ⚡：机构情绪晴雨表 + SmallCapPage详情修复 + AlertRules日期更新（2026年）+ Institutions数据合并修复。</div>
+          <div style={{marginTop:10,fontSize:12,color:'#3f3f46',lineHeight:1.6}}>v24 ⚡：全页面数据来源Footer体系完成 + InstitutionDetail数据源统一为getAllHoldings() + 2026 Q1数据周期标签全面更新。</div>
         </div>
 
         {/* Save */}

@@ -194,6 +194,14 @@ export default function SectorHeatmap({ holdings }: { holdings: Holding[] }) {
           ${(total / 1e12).toFixed(2)}T
         </span>
       </div>
+
+      {/* Page footer */}
+      <div style={{display:'flex',alignItems:'center',justifyContent:'flex-end',gap:8,marginTop:16,padding:'0 4px'}}>
+        <span style={{fontSize:10,color:'#52525b',fontFamily:'JetBrains Mono,monospace'}}>数据来源</span>
+        <span style={{fontSize:10,color:'#38bdf8',fontFamily:'JetBrains Mono,monospace',fontWeight:600}}>SEC EDGAR 13F · 港交所披露易 · 东方财富 QFII</span>
+        <span style={{fontSize:10,color:'#3f3f46'}}>|</span>
+        <span style={{fontSize:10,color:'#52525b',fontFamily:'JetBrains Mono,monospace'}}>2026 Q1</span>
+      </div>
     </div>
   );
 }

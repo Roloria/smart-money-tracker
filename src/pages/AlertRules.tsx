@@ -335,6 +335,14 @@ export default function AlertRules() {
       </div>
 
       <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+
+      {/* Footer: data source */}
+      <div style={{display:'flex',alignItems:'center',justifyContent:'flex-end',gap:8,marginTop:20,padding:'0 4px'}}>
+        <span style={{fontSize:10,color:'#52525b',fontFamily:'JetBrains Mono,monospace'}}>预警规则</span>
+        <span style={{fontSize:10,color:'#f59e0b',fontFamily:'JetBrains Mono,monospace',fontWeight:600}}>示例数据 · 预警阈值可自定义配置</span>
+        <span style={{fontSize:10,color:'#3f3f46'}}>|</span>
+        <span style={{fontSize:10,color:'#52525b',fontFamily:'JetBrains Mono,monospace'}}>v24 ⚡</span>
+      </div>
     </div>
   );
 }

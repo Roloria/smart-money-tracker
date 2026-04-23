@@ -293,6 +293,14 @@ export default function AIFlowPage() {
           />
         ))}
       </div>
+
+      {/* Footer: data source */}
+      <div style={{display:'flex',alignItems:'center',justifyContent:'flex-end',gap:8,marginTop:24,padding:'0 4px'}}>
+        <span style={{fontSize:10,color:'#52525b',fontFamily:'JetBrains Mono,monospace'}}>数据来源</span>
+        <span style={{fontSize:10,color:'#22c55e',fontFamily:'JetBrains Mono,monospace',fontWeight:600}}>AI产业链追踪 · SEC EDGAR · 港交所披露易</span>
+        <span style={{fontSize:10,color:'#3f3f46'}}>|</span>
+        <span style={{fontSize:10,color:'#52525b',fontFamily:'JetBrains Mono,monospace'}}>2026 Q1</span>
+      </div>
     </div>
   );
 }
