@@ -62,7 +62,7 @@ function AppSidebar() {
       {/* Footer */}
       <div style={{ padding: '16px', borderTop: '1px solid #1e1e1e' }}>
         <div style={{ fontSize: 11, color: '#3f3f46', fontFamily: 'JetBrains Mono, monospace', textAlign: 'center' }}>
-          Phase 1 MVP · 2025 Q4 Data
+          Phase 1 MVP · 2026 Q1 Data
         </div>
       </div>
     </aside>

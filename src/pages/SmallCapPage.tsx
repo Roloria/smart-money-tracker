@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * SmallCapPage — 小盘股追踪详情页
  * Phase 6: 小盘股建仓/加仓信号 + 机构持仓详情
@@ -7,7 +6,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Star, TrendingUp, TrendingDown, Clock, Building2, ExternalLink } from 'lucide-react';
 // recharts dynamically imported (see dynamic import pattern in SmartMoney.tsx)
-import { getSmallCapSignals, SMALL_CAP_TRACKED } from '../data/aiChain';
+import { getSmallCapSignals, SMALL_CAP_TRACKED, type SmallCapSignal } from '../data/aiChain';
 import { getAllHoldings, getDataSources } from '../data/realData';
 import type { Holding } from '../types';
 
@@ -41,9 +40,7 @@ function SourceTag({ source }: { source: string }) {
   );
 }
 
-const SIGNAL_ORDER = { new_position: 0, accumulating: 1, momentum: 2, distributing: 3 };
-
-function SignalRow({ sig, onClick }: { sig: ReturnType<typeof getSmallCapSignals>[0]; onClick: () => void }) {
+function SignalRow({ sig, onClick }: { sig: SmallCapSignal; onClick: () => void }) {
   const sigColor = sig.signal === 'new_position' ? C.red : sig.signal === 'accumulating' ? C.green : sig.signal === 'momentum' ? C.yellow : C.text3;
   const marketColor = { US: C.blue, HK: C.yellow, CN: C.red }[sig.market as 'US' | 'HK' | 'CN'] || C.text3;
   const holdings = getAllHoldings().filter(h => h.stockTicker === sig.ticker);

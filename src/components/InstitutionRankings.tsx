@@ -213,7 +213,7 @@ export default function InstitutionRankings() {
   }, [changes]);
 
   // Filter by current quarter for quarter view
-  const currentQ = quarters[0] || '2025Q4';
+  const currentQ = quarters[0] || '2026Q1';
   const viewChanges = useMemo(() => {
     if (view === 'quarter') return changes.filter(c => c.quarter === currentQ);
     // Monthly: use all available

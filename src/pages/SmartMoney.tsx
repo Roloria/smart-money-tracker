@@ -203,7 +203,7 @@ function HoldingsTable({ holdings, onTickerClick, prices }: {
               { k: 'change' as const, l: '季度变化' },
               { k: null, l: '来源' },
             ].map(({ k, l }) => (
-              <th key={l} onClick={() => k && setSort(k as any)} style={{
+              <th key={l} onClick={() => k && setSort(k as 'value' | 'change' | 'shares' | 'price')} style={{
                 padding: '10px 12px', textAlign: 'left',
                 fontSize: 11, fontWeight: 600, color: C.text3,
                 cursor: k ? 'pointer' : 'default', userSelect: 'none', whiteSpace: 'nowrap',
@@ -256,7 +256,7 @@ function HoldingsTable({ holdings, onTickerClick, prices }: {
                   <Pill value={h.changePercent} />
                 </td>
                 <td style={{ padding: '12px' }}>
-                  <DataSourceBadge source={(h as any)._dataSource} />
+                  <DataSourceBadge source={h._dataSource} />
                 </td>
               </tr>
             )
@@ -612,7 +612,7 @@ export default function SmartMoney() {
       totalValue,
       topGainer: { ticker: topGainer?.stockTicker || '', institution: inst?.name || '', change: topGainer?.changePercent || 0 },
       topLoser: { ticker: topLoser?.stockTicker || '', institution: loserInst?.name || '', change: topLoser?.changePercent || 0 },
-      lastUpdated: lastUpdatedLabel || '2025 Q4',
+      lastUpdated: lastUpdatedLabel || '2026 Q1',
     }
   }, [lastUpdatedLabel])
 
@@ -809,7 +809,7 @@ export default function SmartMoney() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 14, marginBottom: 14 }} data-stat-grid>
               <StatCard icon={Building2} label="覆盖机构" value={`${institutions.length}家`} sub="全球顶级主权 & 机构基金" color={C.blue} />
               <StatCard icon={DollarSign} label="实时持仓总值" value={fmt$(liveTotal)} sub={liveCount > 0 ? `${liveCount}/${totalTickers}只已实时报价` : '加载中…'} color={C.green} />
-              <StatCard icon={BarChart3} label="披露持仓市值" value={fmt$(stats.totalValue)} sub="2025 Q4 披露值" color={C.yellow} />
+              <StatCard icon={BarChart3} label="披露持仓市值" value={fmt$(stats.totalValue)} sub="2026 Q1 披露值" color={C.yellow} />
               <StatCard icon={TrendingUp} label="本季增持王" value={stats.topGainer.ticker} sub={`${stats.topGainer.institution} · ${pct(stats.topGainer.change)}`} color={C.green} />
               <StatCard icon={TrendingDown} label="本季减持王" value={stats.topLoser.ticker} sub={`${stats.topLoser.institution} · ${pct(stats.topLoser.change)}`} color={C.red} />
             </div>
@@ -993,7 +993,7 @@ export default function SmartMoney() {
                     <div style={{ fontSize: 12, fontWeight: 600, color: C.text3 }}>季度异动 Top 8</div>
                     <div style={{ display: 'flex', gap: 2 }}>
                       {([['ALL','整体'],['US','🇺🇸美股'],['HK','🇭🇰港股'],['CN','🇨🇳A股']] as [string,string][]).map(([k, label]) => (
-                        <button key={k} onClick={() => setChartMarket(k as any)} style={{
+                        <button key={k} onClick={() => setChartMarket(k as 'ALL' | 'US' | 'HK' | 'CN')} style={{
                           padding: '3px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600,
                           background: chartMarket === k ? `${C.blue}20` : 'transparent',
                           border: `1px solid ${chartMarket === k ? C.blue + '40' : C.border}`,

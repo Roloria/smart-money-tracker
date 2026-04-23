@@ -125,7 +125,7 @@ export default function Dashboard() {
             <span style={{ fontSize: 12, color: '#71717a', fontWeight: 500 }}>总持仓市值</span>
           </div>
           <div style={{ fontSize: 28, fontWeight: 700, fontFamily: 'JetBrains Mono, monospace', color: '#fafafa' }}>{formatNumber(totalValue)}</div>
-          <div style={{ fontSize: 12, color: '#52525b', marginTop: 4 }}>2025 Q4 数据</div>
+          <div style={{ fontSize: 12, color: '#52525b', marginTop: 4 }}>2026 Q1 数据</div>
         </div>
         <div className="stat-card">
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>

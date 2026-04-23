@@ -2,9 +2,7 @@ import React, { useState } from 'react';
 import { Bell, BellOff, Plus, Trash2, Mail, MessageCircle, Search, Send, CheckCircle2, XCircle, Clock } from 'lucide-react';
 import { alertRules as initialRules, institutions } from '../data/mockData';
 import { AlertRule } from '../types';
-
-// ── Feishu Webhook (from MEMORY.md) ────────────────────────────────────────────
-const FEISHU_WEBHOOK = 'https://open.feishu.cn/open-apis/bot/v2/hook/acb1705d-f658-4521-8387-404acf50a098';
+import { FEISHU_WEBHOOK } from '../config';
 const API_BASE = '/api';
 
 interface NotificationLog {

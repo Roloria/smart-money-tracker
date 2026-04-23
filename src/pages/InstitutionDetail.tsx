@@ -4,7 +4,7 @@ import { ArrowLeft, Globe, TrendingUp, PieChart, BarChart3 } from 'lucide-react'
 import { PieChart as RePieChart, Pie, Cell, Tooltip, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
 import { institutions, holdings, formatNumber, formatPercent, formatShares, typeLabels, typeColors } from '../data/mockData';
 
-const quarters = ['2025Q4', '2025Q3', '2025Q2', '2025Q1', '2024Q4', '2024Q3', '2024Q2', '2024Q1', '2023Q4'];
+const quarters = ['2026Q1', '2025Q4', '2025Q3', '2025Q2', '2025Q1', '2024Q4', '2024Q3', '2024Q2', '2024Q1'];
 const COLORS = ['#38bdf8', '#22c55e', '#f59e0b', '#f43f5e', '#a78bfa', '#84cc16', '#e879f9', '#fb923c'];
 
 function makeLineData(instId: number, allHoldings: typeof holdings) {
@@ -27,7 +27,7 @@ export default function InstitutionDetail() {
   const instId = Number(id);
   const inst = institutions.find(i => i.id === instId)!;
   const instHoldings = holdings.filter(h => h.institutionId === instId);
-  const [selectedQuarter, setSelectedQuarter] = useState('2025Q4');
+  const [selectedQuarter, setSelectedQuarter] = useState('2026Q1');
   if (!inst) return <div style={{color:'#ef4444',padding:40}}>机构未找到</div>;
   const sortedHoldings = [...instHoldings].sort((a, b) => b.marketValue - a.marketValue);
   const sectorMap: Record<string, number> = {};

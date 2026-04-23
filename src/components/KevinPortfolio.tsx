@@ -1,9 +1,9 @@
 /**
  * KevinPortfolio — Kevin 真实持仓追踪
  * 显示 Kevin 个人持仓与聪明钱机构持仓的对比分析
- * 数据来源：Signal Arena 实盘记录（2026-04-21 更新）
- * 持仓：泡泡玛特25万/腾讯15万/天齐10万/润泽10万/世纪华通18万；现金2万
- * git commit: 9f143e1（v23 Settings版本修复）
+ * 数据来源：每日持仓复盘报告（2026-04-17 更新 · 总资金60万）
+ * 持仓：小米39.1%/安克创新24.6%/腾讯13%/美团11.6%/泡泡玛特11.6%
+ * git commit: 88432b7（v18 Dashboard实时时钟 + 2026Q1数据周期）
  */
 
 import { useState, useEffect } from 'react';
@@ -62,14 +62,14 @@ const INVESTED_CAPITAL = TOTAL_CAPITAL * INVESTED_RATIO;
 
 const FX: Record<string, number> = { CNY: 1, HKD: 0.93, USD: 7.25 };
 
-// Kevin 真实持仓（来源：Signal Arena 实盘记录 · 2026-04-21 更新）
-// 持仓：泡泡玛特25万/腾讯15万/天齐10万/润泽10万/世纪华通18万；现金2万
+// Kevin 真实持仓（来源：每日持仓复盘报告 · 2026-04-17 更新 · 总资金60万）
+// 持仓：小米39.1%/安克创新24.6%/腾讯13%/美团11.6%/泡泡玛特11.6%
 const KEVIN_HOLDINGS: Holding[] = [
-  { ticker: '00700.HK',  name: '腾讯控股',   market: 'HK', shares: null, cost: null, sector: '互联网/AI',  allocation: 0.250 },
-  { ticker: '09992.HK',  name: '泡泡玛特',   market: 'HK', shares: null, cost: null, sector: '消费/潮玩',  allocation: 0.417 },
-  { ticker: '002602.SZ', name: '世纪华通',   market: 'CN', shares: null, cost: null, sector: '游戏/AI算力', allocation: 0.300 },
-  { ticker: '002466.SZ', name: '天齐锂业',   market: 'CN', shares: null, cost: null, sector: '锂电/能源',  allocation: 0.167 },
-  { ticker: '300442.SZ', name: '润泽科技',   market: 'CN', shares: null, cost: null, sector: 'IDC/数据中心', allocation: 0.167 },
+  { ticker: '01810.HK', name: '小米集团',   market: 'HK', shares: null, cost: null, sector: 'AI硬件/新能源', allocation: 0.391 },
+  { ticker: '300866.SZ', name: '安克创新',   market: 'CN', shares: null, cost: null, sector: '消费电子/出海', allocation: 0.246 },
+  { ticker: '00700.HK',  name: '腾讯控股',  market: 'HK', shares: null, cost: null, sector: '互联网/AI',     allocation: 0.130 },
+  { ticker: '03690.HK',  name: '美团',      market: 'HK', shares: null, cost: null, sector: '本地生活',      allocation: 0.116 },
+  { ticker: '09992.HK',  name: '泡泡玛特',  market: 'HK', shares: null, cost: null, sector: '消费/潮玩',      allocation: 0.116 },
 ];
 
 // ── AI 诊断引擎（规则引擎，无需 AI API）─────────────────────────────────────
@@ -91,9 +91,9 @@ function runDiagnosis(): DiagnosisResult {
   const SECTOR_MAP: Record<string, string> = {
     '互联网/AI':     '科技',
     '消费/潮玩':     '消费',
-    '锂电/能源':     '能源',
-    '游戏/AI算力':   '科技',
-    'IDC/数据中心':  '科技',
+    'AI硬件/新能源': '科技',
+    '消费电子/出海': '消费',
+    '本地生活':      '消费',
   };
 
   const sectorDiagnoses: SectorDiagnosis[] = [];

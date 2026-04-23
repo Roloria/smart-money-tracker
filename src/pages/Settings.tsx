@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { Bell, RefreshCw, Database, Check } from 'lucide-react';
-
-const DEFAULT_FEISHU = 'https://open.feishu.cn/open-apis/bot/v2/hook/acb1705d-f658-4521-8387-404acf50a098';
+import { FEISHU_WEBHOOK } from '../config';
 
 export default function SettingsPage() {
-  const [feishuWebhook, setFeishuWebhook] = useState(DEFAULT_FEISHU);
+  const [feishuWebhook, setFeishuWebhook] = useState(FEISHU_WEBHOOK);
   const [emailTo, setEmailTo] = useState('');
   const [refreshFreq, setRefreshFreq] = useState('6h');
   const [saved, setSaved] = useState(false);

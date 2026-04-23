@@ -449,7 +449,7 @@ export default function DataSourcePanel({ onClose }: { onClose?: () => void }) {
             <div style={{ fontSize: 11, fontWeight: 700, color: '#71717a', marginBottom: 8 }}>ℹ️ 刷新说明</div>
             <div style={{ fontSize: 11, color: '#52525b', lineHeight: 1.7 }}>
               点击刷新按钮将调用服务器端 Python 爬虫脚本，从原始数据源抓取最新数据并更新本地缓存。
-              SEC EDGAR 13F 披露有 45 天延迟，最新季度为 2025Q4。QFII 和港交所数据为每日更新。
+              SEC EDGAR 13F 披露有 45 天延迟，最新季度为 2026Q1。QFII 和港交所数据为每日更新。
               刷新全部数据源预计需要 15-30 秒。
             </div>
           </div>

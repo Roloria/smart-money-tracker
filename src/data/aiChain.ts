@@ -238,7 +238,7 @@ export function getSmallCapSignals(): SmallCapSignal[] {
       severity,
       description: desc,
       institutions: [...new Set(instNames)],
-      lastUpdated: '2025Q4',
+      lastUpdated: '2026Q1',
     });
   });
 

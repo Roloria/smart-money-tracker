@@ -188,7 +188,7 @@ function StockDetailPanel({ layerKey }: { layerKey: AILayer }) {
       <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden', marginBottom: 16 }}>
         <div style={{ padding: '14px 20px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontSize: 13, fontWeight: 600, color: C.text }}>持仓明细</span>
-          <SourceTag source={(holdings[0] as any)?._dataSource || 'MOCK'} />
+          <SourceTag source={holdings[0]?._dataSource || 'MOCK'} />
         </div>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -201,8 +201,7 @@ function StockDetailPanel({ layerKey }: { layerKey: AILayer }) {
             </thead>
             <tbody>
               {holdings.map(h => {
-                const inst = holdings.find((x: any) => x.institutionId === h.institutionId);
-                const instName = (inst as any)?.institutionName || `机构${h.institutionId}`;
+                const instName = `机构${h.institutionId}`;
                 return (
                   <tr key={h.id} style={{ borderBottom: `1px solid ${C.border}` }}
                     onMouseEnter={e => (e.currentTarget.style.background = C.cardHover)}
@@ -218,7 +217,7 @@ function StockDetailPanel({ layerKey }: { layerKey: AILayer }) {
                       {pct(h.changePercent)}
                     </td>
                     <td style={{ padding: '12px 14px' }}>
-                      <SourceTag source={(h as any)._dataSource || 'MOCK'} />
+                      <SourceTag source={h._dataSource || 'MOCK'} />
                     </td>
                   </tr>
                 );
