@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { TrendingUp, TrendingDown, Sparkles, XCircle, Filter } from 'lucide-react';
+import { TrendingUp, TrendingDown, Sparkles, XCircle, Filter, BarChart3 } from 'lucide-react';
 import { holdingChanges, institutions, formatNumber, formatPercent, formatShares, holdings } from '../data/mockData';
 
 const typeFilters = [
@@ -100,6 +100,29 @@ export default function Changes() {
 
         <span style={{marginLeft:'auto',fontSize:12,color:'#52525b',fontFamily:'JetBrains Mono,monospace'}}>{filtered.length} 条记录</span>
       </div>
+
+      {/* Summary stats bar */}
+      {filtered.length > 0 && (
+        <div style={{display:'flex',gap:16,marginBottom:20,padding:'10px 16px',background:'#0d0d0d',borderRadius:10,border:'1px solid #1e1e1e'}}>
+          <div style={{display:'flex',alignItems:'center',gap:6}}>
+            <TrendingUp size={13} color="#22c55e" />
+            <span style={{fontSize:11,color:'#71717a'}}>增持</span>
+            <span style={{fontSize:13,fontWeight:700,color:'#22c55e',fontFamily:'JetBrains Mono,monospace'}}>{filtered.filter(c=>c.changeType==='increase'||c.changeType==='new').length}</span>
+          </div>
+          <div style={{display:'flex',alignItems:'center',gap:6}}>
+            <TrendingDown size={13} color="#ef4444" />
+            <span style={{fontSize:11,color:'#71717a'}}>减持</span>
+            <span style={{fontSize:13,fontWeight:700,color:'#ef4444',fontFamily:'JetBrains Mono,monospace'}}>{filtered.filter(c=>c.changeType==='decrease'||c.changeType==='exited').length}</span>
+          </div>
+          <div style={{display:'flex',alignItems:'center',gap:6}}>
+            <BarChart3 size={13} color="#38bdf8" />
+            <span style={{fontSize:11,color:'#71717a'}}>平均幅度</span>
+            <span style={{fontSize:13,fontWeight:700,color:'#38bdf8',fontFamily:'JetBrains Mono,monospace'}}>
+              {filtered.length > 0 ? (filtered.reduce((s,c) => s + Math.abs(c.changePercent), 0) / filtered.length).toFixed(1) : '0'}%
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Bar chart */}
       {chartData.length > 0 && (
