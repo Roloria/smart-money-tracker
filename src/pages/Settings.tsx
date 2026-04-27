@@ -1,12 +1,23 @@
-import { useState } from 'react';
-import { Bell, RefreshCw, Database, Check } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Bell, RefreshCw, Database, Check, Clock } from 'lucide-react';
 import { FEISHU_WEBHOOK } from '../config';
 
 export default function SettingsPage() {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  const [saved, setSaved] = useState(false);
   const [feishuWebhook, setFeishuWebhook] = useState(FEISHU_WEBHOOK);
   const [emailTo, setEmailTo] = useState('');
   const [refreshFreq, setRefreshFreq] = useState('6h');
-  const [saved, setSaved] = useState(false);
+
+  const shanghaiNow = now.toLocaleString('zh-CN', {
+    timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit',
+    day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit',
+  });
 
   const handleSave = () => {
     setSaved(true);
@@ -94,6 +105,11 @@ export default function SettingsPage() {
             <div><span style={{color:'#52525b'}}>数据周期：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>2026 Q1</span></div>
             <div><span style={{color:'#52525b'}}>追踪机构：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>12家全球机构</span></div>
             <div><span style={{color:'#52525b'}}>数据来源：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>全页面覆盖</span></div>
+            <div style={{gridColumn:'1 / -1',display:'flex',alignItems:'center',gap:6,marginTop:2}}>
+              <Clock size={11} color="#38bdf8" />
+              <span style={{color:'#52525b'}}>当前时间：</span>
+              <span style={{fontFamily:'JetBrains Mono,monospace',color:'#38bdf8',fontWeight:600}}>{shanghaiNow} 北京时间</span>
+            </div>
           </div>
           <div style={{marginTop:10,fontSize:12,color:'#3f3f46',lineHeight:1.6}}>v24 ⚡：全页面数据来源Footer体系完成 + InstitutionDetail数据源统一为getAllHoldings() + 2026 Q1数据周期标签全面更新。</div>
         </div>

@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Globe, Filter, Clock } from 'lucide-react';
 import { institutions, formatNumber, typeLabels, typeColors } from '../data/mockData';
-import { holdings as mockHoldings } from '../data/mockData';
 import { getAllHoldings, ALL_CHANGES } from '../data/realData';
 import { getInstitutionSourceInfo } from '../data/realData';
 

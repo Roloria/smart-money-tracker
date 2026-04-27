@@ -1363,6 +1363,14 @@ export default function SmartMoney() {
         <Suspense fallback={<LazyLoader h={500} />}><DataSourcePanel onClose={() => setShowDataSourcePanel(false)} /></Suspense>
       )}
 
+      {/* Footer: data source */}
+      <div style={{display:'flex',alignItems:'center',justifyContent:'flex-end',gap:8,padding:'12px 8px 0',borderTop:'1px solid #1e1e1e',marginTop:8}}>
+        <span style={{fontSize:10,color:'#52525b',fontFamily:'JetBrains Mono,monospace'}}>数据来源</span>
+        <span style={{fontSize:10,color:'#38bdf8',fontFamily:'JetBrains Mono,monospace',fontWeight:600}}>SEC EDGAR 13F · 港交所披露易 · 东方财富 QFII</span>
+        <span style={{fontSize:10,color:'#3f3f46'}}>|</span>
+        <span style={{fontSize:10,color:'#52525b',fontFamily:'JetBrains Mono,monospace'}}>2026 Q1</span>
+      </div>
+
       <style>{`
         @keyframes livePulse {
           0%, 100% { opacity: 1; box-shadow: 0 0 0 2px #22c55e30; }
