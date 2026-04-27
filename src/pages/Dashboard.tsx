@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { TrendingUp, TrendingDown, Building2, DollarSign, Activity, ArrowUpRight, ArrowDownRight, Star, Clock, TrendingUpCircle } from 'lucide-react';
+import { TrendingUp, TrendingDown, Building2, DollarSign, Activity, ArrowUpRight, ArrowDownRight, Star, Clock, TrendingUpCircle, RefreshCw } from 'lucide-react';
 import { institutions, holdings, holdingChanges, formatNumber, formatPercent, typeLabels, typeColors } from '../data/mockData';
+import { getAllHoldings } from '../data/realData';
 
 
 // ── Market Status ──────────────────────────────────────────────────────────────
@@ -50,7 +51,39 @@ export default function Dashboard() {
     return () => clearInterval(t);
   }, []);
 
-  const shanghaiTime = now.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshMsg, setRefreshMsg] = useState<string | null>(null);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    setRefreshMsg(null);
+    try {
+      const r = await fetch('/api/refresh/all', { method: 'POST' });
+      const d = await r.json();
+      if (d.success) {
+        setRefreshMsg('✅ 刷新成功');
+        localStorage.setItem('sm_data_refreshed', new Date().toISOString());
+      } else {
+        setRefreshMsg(`⚠️ ${d.error || '刷新失败'}`);
+      }
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('net::')) {
+        setRefreshMsg('⚠️ 后端未部署（可忽略，静态数据正常运行）');
+      } else {
+        setRefreshMsg(`⚠️ ${msg.slice(0, 60)}`);
+      }
+    } finally {
+      setRefreshing(false);
+      setTimeout(() => setRefreshMsg(null), 5000);
+    }
+  };
+
+  const shanghaiTime = now.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+  // 数据质量指示器：港股+A股真实数据占比
+  const allHoldingsData = getAllHoldings()
+  const realDataCount = allHoldingsData.filter((h: any) => h.market === 'HK' || h.market === 'CN').length
+  const dataQuality = allHoldingsData.length > 0 ? Math.round(realDataCount / allHoldingsData.length * 100) : 0;
   const instCount = institutions.length;                              // 动态计算，避免硬编码
   const totalValue = institutions.reduce((sum, i) => sum + i.totalValue, 0);
   const totalIncreases = holdings.filter(h => h.changePercent > 0).length;
@@ -91,15 +124,33 @@ export default function Dashboard() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <div style={{
                   width: 6, height: 6, borderRadius: '50%',
-                  background: '#22c55e', boxShadow: '0 0 4px #22c55e60',
+                  background: '#f59e0b', boxShadow: '0 0 4px #f59e0b60',
                 }} />
-                <span>实时</span>
+                <span style={{ color: '#f59e0b', fontWeight: 600 }}>静态</span>
               </div>
               <span style={{ color: '#27272a' }}>|</span>
               <Clock size={10} />
               <span>{shanghaiTime}</span>
               <span style={{ color: '#27272a' }}>|</span>
               <span>SEC EDGAR · 2026 Q1</span>
+              <span style={{ color: '#27272a' }}>|</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 3, background: '#141414', border: '1px solid #1e1e1e', borderRadius: 4, padding: '1px 6px' }}>
+                <span style={{ fontSize: 9, color: '#52525b' }}>真实数据</span>
+                <span style={{ fontSize: 9, fontWeight: 700, color: dataQuality >= 50 ? '#22c55e' : '#f59e0b' }}>{dataQuality}%</span>
+              </div>
+              <span style={{ color: '#27272a' }}>|</span>
+              <button
+                onClick={handleRefresh}
+                disabled={refreshing}
+                style={{ display: 'flex', alignItems: 'center', gap: 3, background: 'none', border: 'none', cursor: 'pointer', color: refreshing ? '#52525b' : '#38bdf8', fontSize: 10, padding: '1px 4px' }}
+                title="刷新数据（需部署后端服务）"
+              >
+                <RefreshCw size={10} style={{ animation: refreshing ? 'spin 1s linear infinite' : 'none' }} />
+                {refreshing ? '刷新中…' : '刷新'}
+              </button>
+              {refreshMsg && (
+                <span style={{ fontSize: 10, color: refreshMsg.includes('成功') ? '#22c55e' : '#f59e0b', fontWeight: 600, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{refreshMsg}</span>
+              )}
             </div>
           </div>
         </div>

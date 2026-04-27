@@ -5,6 +5,7 @@
 
 import { useMemo, useState } from 'react';
 import { getAllHoldings } from '../data/realData';
+import type { Holding } from '../types';
 import { institutions } from '../data/mockData';
 
 const C = {
@@ -64,7 +65,7 @@ export default function InstitutionOverlap() {
       changes: number[];
     }>();
 
-    holdings.forEach((h: any) => {
+    holdings.forEach((h: Holding) => {
       const fx = getFx(h.stockTicker);
       const valUsd = h.marketValue * fx;
       if (!tickerMap.has(h.stockTicker)) {
@@ -317,6 +318,14 @@ export default function InstitutionOverlap() {
       <div style={{ marginTop: 12, fontSize: 11, color: C.text3, lineHeight: 1.7 }}>
         信号说明：强烈买入 = ≥3家机构共同持有 + 平均变化≥15%；买入 = 平均变化≥5%；中性 = 变化在±10%之间；卖出 = 平均变化≤-10%。
         数据来源：SEC EDGAR 13F / 港交所披露易 / 东方财富 QFII。
+      </div>
+
+      {/* Page footer */}
+      <div style={{display:'flex',alignItems:'center',justifyContent:'flex-end',gap:8,marginTop:16,padding:'0 4px'}}>
+        <span style={{fontSize:10,color:'#52525b',fontFamily:'JetBrains Mono,monospace'}}>数据来源</span>
+        <span style={{fontSize:10,color:'#a78bfa',fontFamily:'JetBrains Mono,monospace',fontWeight:600}}>SEC EDGAR 13F · 港交所披露易 · 东方财富 QFII</span>
+        <span style={{fontSize:10,color:'#3f3f46'}}>|</span>
+        <span style={{fontSize:10,color:'#52525b',fontFamily:'JetBrains Mono,monospace'}}>2026 Q1</span>
       </div>
     </div>
   );

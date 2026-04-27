@@ -59,7 +59,7 @@ export default function SectorHeatmap({ holdings }: { holdings: Holding[] }) {
     const map = new Map<string, { value: number; stocks: StockNode[] }>();
     let grand = 0;
 
-    holdings.forEach((h: any) => {
+    holdings.forEach((h: Holding) => {
       const fx = getFx(h.stockTicker);
       const valUsd = h.marketValue * fx;
       grand += valUsd;

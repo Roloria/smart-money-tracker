@@ -348,6 +348,14 @@ export default function InstitutionRankings() {
         注：金额基于持仓数量 × 期末股价估算，单位为十亿美元（B）。港股以 7.78 HKD/USD、A股以 7.25 CNY/USD 换算。
         数据来源：SEC EDGAR 13F / 港交所披露易 / 东方财富 QFII。
       </div>
+
+      {/* Page footer */}
+      <div style={{display:'flex',alignItems:'center',justifyContent:'flex-end',gap:8,marginTop:16,padding:'0 4px'}}>
+        <span style={{fontSize:10,color:'#52525b',fontFamily:'JetBrains Mono,monospace'}}>数据来源</span>
+        <span style={{fontSize:10,color:'#f59e0b',fontFamily:'JetBrains Mono,monospace',fontWeight:600}}>SEC EDGAR 13F · 港交所披露易 · 东方财富 QFII</span>
+        <span style={{fontSize:10,color:'#3f3f46'}}>|</span>
+        <span style={{fontSize:10,color:'#52525b',fontFamily:'JetBrains Mono,monospace'}}>2026 Q1</span>
+      </div>
     </div>
   );
 }

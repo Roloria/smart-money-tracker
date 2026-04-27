@@ -4,6 +4,7 @@ import { Globe, Filter, Clock } from 'lucide-react';
 import { institutions, formatNumber, typeLabels, typeColors } from '../data/mockData';
 import { getAllHoldings, ALL_CHANGES } from '../data/realData';
 import { getInstitutionSourceInfo } from '../data/realData';
+import type { Holding } from '../types';
 
 const C = {
   green: '#22c55e', yellow: '#f59e0b', red: '#ef4444',
@@ -97,10 +98,10 @@ export default function Institutions() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
         {filtered.map(inst => {
           // Use ALL_HOLDINGS (merged mock + real) so institutions with real data show correct holdings
-          const instHoldings = ALL_HOLDINGS.filter((h: any) => h.institutionId === inst.id);
-          const totalVal = instHoldings.reduce((s: number, h: any) => s + h.marketValue, 0);
-          const gains = instHoldings.filter((h: any) => h.changePercent > 0).length;
-          const losses = instHoldings.filter((h: any) => h.changePercent < 0).length;
+          const instHoldings = ALL_HOLDINGS.filter((h: Holding) => h.institutionId === inst.id);
+          const totalVal = instHoldings.reduce((s: number, h: Holding) => s + h.marketValue, 0);
+          const gains = instHoldings.filter((h: Holding) => h.changePercent > 0).length;
+          const losses = instHoldings.filter((h: Holding) => h.changePercent < 0).length;
           const srcInfo = getInstitutionSourceInfo(inst.id);
           const freshnessColor = srcInfo.freshness === 'live' ? C.green : srcInfo.freshness === 'recent' ? C.yellow : C.text3;
 
@@ -161,7 +162,7 @@ export default function Institutions() {
                 {/* Top holdings preview */}
                 <div style={{ fontSize: 11, color: '#52525b', marginBottom: 4 }}>重仓股</div>
                 <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                  {instHoldings.slice(0, 4).map((h: any) => (
+                  {instHoldings.slice(0, 4).map((h: Holding) => (
                     <div key={h.id} style={{ background: '#0f0f0f', border: '1px solid #1e1e1e', borderRadius: 4, padding: '2px 8px', fontSize: 11, fontFamily: 'JetBrains Mono, monospace', color: '#a1a1aa' }}>
                       {h.stockTicker}
                       <span style={{ color: h.changePercent > 0 ? '#22c55e' : h.changePercent < 0 ? '#ef4444' : '#71717a', marginLeft: 4 }}>

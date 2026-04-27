@@ -108,7 +108,7 @@ export function getLastUpdated(): string {
 
 // ── 数据源检测 ───────────────────────────────────────────────────────────────
 function getHoldingSource(h: Holding): DataSourceInfo {
-  const market = (h as any).market as string;
+  const market = h.market;
   if (market === 'CN') return DATA_SOURCES.find(s => s.source === 'EASTMONEY_QFII')!;
   if (market === 'HK') return DATA_SOURCES.find(s => s.source === 'HKEX')!;
   return DATA_SOURCES.find(s => s.source === 'SEC_EDGAR')!;
@@ -154,7 +154,7 @@ const A_SHARE_HOLDINGS: Holding[] = [
 
 // ── 合并所有持仓 ─────────────────────────────────────────────────────────────
 // US holdings from mockData (真实 SEC EDGAR 数据，标记为 SEC_EDGAR)
-const US_HOLDINGS: Holding[] = mockHoldings.filter((h: any) => (h as any).market === 'US');
+const US_HOLDINGS: Holding[] = mockHoldings.filter((h: Holding) => h.market === 'US');
 
 // Attach data source metadata to each holding
 function tagSource(h: Holding): Holding {

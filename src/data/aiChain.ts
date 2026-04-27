@@ -201,8 +201,8 @@ export function getSmallCapSignals(): SmallCapSignal[] {
 
     const meta = trackedMeta.get(ticker)!;
     const instNames = holdings.map(h => {
-      const inst = (all as any[]).find((x: any) => x.institutionId === h.institutionId);
-      return inst?.name || `机构${h.institutionId}`;
+      const inst = (all as Holding[]).find((x: Holding) => x.institutionId === h.institutionId);
+      return inst?.stockName || `机构${h.institutionId}`;
     });
     const avgChange = holdings.reduce((s, h) => s + h.changePercent, 0) / holdings.length;
 

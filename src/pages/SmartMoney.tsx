@@ -349,7 +349,7 @@ function InstitutionCard({ inst, holdings, onClick }: {
         </div>
         <div style={{ background: '#0d0d0d', borderRadius: 8, padding: '10px 12px' }}>
           <div style={{ fontSize: 10, color: C.text3, marginBottom: 3 }}>持股数</div>
-          <div style={{ fontSize: 14, fontWeight: 700, fontFamily: 'JetBrains Mono, monospace', color: C.text }}>{inst.holdingCount}</div>
+          <div style={{ fontSize: 14, fontWeight: 700, fontFamily: 'JetBrains Mono, monospace', color: C.text }}>{ih.length}</div>
         </div>
       </div>
       <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>

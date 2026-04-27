@@ -61,7 +61,7 @@ function SignalRow({ sig, onClick }: { sig: SmallCapSignal; onClick: () => void 
             <span style={{ padding: '1px 6px', borderRadius: 4, fontSize: 10, fontWeight: 700, background: `${marketColor}15`, color: marketColor }}>
               {{ US: '🇺🇸US', HK: '🇭🇰HK', CN: '🇨🇳A股' }[sig.market] || sig.market}
             </span>
-            <SourceTag source={(holdings[0] as any)?._dataSource || 'MOCK'} />
+            <SourceTag source={holdings.length > 0 && holdings[0].market === 'US' ? 'SEC_EDGAR' : holdings.length > 0 && holdings[0].market === 'HK' ? 'HKEX' : holdings.length > 0 && holdings[0].market === 'CN' ? 'EASTMONEY_QFII' : 'MOCK'} />
           </div>
           <div style={{ fontSize: 12, color: C.text2, marginBottom: 8, lineHeight: 1.5 }}>{sig.description}</div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -121,8 +121,8 @@ function StockDetailPanel({ ticker }: { ticker: string }) {
 
   const totalValue = holdings.reduce((s, h) => s + h.marketValue, 0);
   const avgChange = holdings.reduce((s, h) => s + h.changePercent, 0) / holdings.length;
-  const marketColor = { US: C.blue, HK: C.yellow, CN: C.red }[(holdings[0] as any).market as 'US' | 'HK' | 'CN'] || C.text3;
-  const src = getDataSources().find(s => s.source === (holdings[0] as any)._dataSource) || getDataSources()[getDataSources().length - 1];
+  const marketColor = { US: C.blue, HK: C.yellow, CN: C.red }[holdings[0].market as 'US' | 'HK' | 'CN'] || C.text3;
+  const src = getDataSources().find(s => s.source === (holdings.length > 0 && holdings[0].market === 'US' ? 'SEC_EDGAR' : holdings.length > 0 && holdings[0].market === 'HK' ? 'HKEX' : 'EASTMONEY_QFII')) || getDataSources()[getDataSources().length - 1];
 
   return (
     <div>
@@ -143,7 +143,7 @@ function StockDetailPanel({ ticker }: { ticker: string }) {
               <span style={{ padding: '2px 8px', borderRadius: 6, fontSize: 11, fontWeight: 700, color: marketColor }}>
                 {String(holdings[0].market)}
               </span>
-              <SourceTag source={(holdings[0] as any)._dataSource || 'MOCK'} />
+              <SourceTag source={holdings.length > 0 && holdings[0].market === 'US' ? 'SEC_EDGAR' : holdings.length > 0 && holdings[0].market === 'HK' ? 'HKEX' : holdings.length > 0 && holdings[0].market === 'CN' ? 'EASTMONEY_QFII' : 'MOCK'} />
             </div>
             {meta?.notes && <div style={{ fontSize: 12, color: C.text2, marginBottom: 4 }}>{meta.notes}</div>}
             {meta?.marketCap && <div style={{ fontSize: 11, color: C.text3 }}>市值：{meta.marketCap}亿美元</div>}
@@ -163,7 +163,7 @@ function StockDetailPanel({ ticker }: { ticker: string }) {
             { label: '信号状态', value: signals[0]?.signal === 'new_position' ? '🆕新建仓' : signals[0]?.signal === 'accumulating' ? '📈加仓中' : signals[0]?.signal || '—', color: signals[0]?.signal === 'new_position' ? C.red : C.green },
           ].map(item => (
             <div key={item.label} style={{ background: '#0d0d0d', borderRadius: 8, padding: '10px 12px', textAlign: 'center' }}>
-              <div style={{ fontSize: 13, fontWeight: 800, fontFamily: 'JetBrains Mono, monospace', color: (item as any).color || C.text }}>{item.value}</div>
+              <div style={{ fontSize: 13, fontWeight: 800, fontFamily: 'JetBrains Mono, monospace', color: item.color || C.text }}>{item.value}</div>
               <div style={{ fontSize: 10, color: C.text3, marginTop: 2 }}>{item.label}</div>
             </div>
           ))}

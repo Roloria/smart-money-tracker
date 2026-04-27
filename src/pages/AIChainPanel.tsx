@@ -164,7 +164,9 @@ function SmallCapCard({ signal }: { signal: SmallCapSignal }) {
             </span>
           </div>
           <div style={{ fontSize: 11, color: C.text2, marginBottom: 6 }}>{signal.description}</div>
-          <div style={{ fontSize: 10, color: C.text3 }}>持有机构：{signal.institutions.slice(0, 4).join(', ')}</div>
+          <div style={{ fontSize: 10, color: C.text3 }}>
+            持有机构：{signal.institutions.length > 0 ? signal.institutions.slice(0, 4).join(', ') : <span style={{ color: C.text3 }}>暂无机构数据</span>}
+          </div>
         </div>
         <SignalBadge s={signal} />
       </div>

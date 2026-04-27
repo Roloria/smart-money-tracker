@@ -1,9 +1,9 @@
 /**
  * KevinPortfolio — Kevin 真实持仓追踪
  * 显示 Kevin 个人持仓与聪明钱机构持仓的对比分析
- * 数据来源：每日持仓复盘报告（2026-04-17 更新 · 总资金60万）
+ * 数据来源：每日持仓复盘报告（2026-04-21 更新 · 总资金60万）
  * 持仓：小米39.1%/安克创新24.6%/腾讯13%/美团11.6%/泡泡玛特11.6%
- * git commit: 88432b7（v18 Dashboard实时时钟 + 2026Q1数据周期）
+ * git commit: 308c9f1（v25 Settings版本统一 + 全页面Footer体系）
  */
 
 import { useState, useEffect } from 'react';

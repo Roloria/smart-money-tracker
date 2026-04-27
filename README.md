@@ -110,8 +110,8 @@ Backend (Node.js API Server)
 
 ### 安装
 ```bash
-git clone https://github.com/Roloria/where-smart-money-go.git
-cd where-smart-money-go
+git clone https://github.com/Roloria/smart-money-tracker.git
+cd smart-money-tracker
 
 # 安装依赖
 bun install   # 或 npm install
