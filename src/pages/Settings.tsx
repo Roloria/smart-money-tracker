@@ -13,6 +13,13 @@ export default function SettingsPage() {
   const [feishuWebhook, setFeishuWebhook] = useState(FEISHU_WEBHOOK);
   const [emailTo, setEmailTo] = useState('');
   const [refreshFreq, setRefreshFreq] = useState('6h');
+  const [serverStatus, setServerStatus] = useState<'checking' | 'online' | 'offline'>('checking');
+
+  useEffect(() => {
+    fetch('/api/sources')
+      .then(r => r.ok ? setServerStatus('online') : setServerStatus('offline'))
+      .catch(() => setServerStatus('offline'));
+  }, []);
 
   const shanghaiNow = now.toLocaleString('zh-CN', {
     timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit',
@@ -99,9 +106,9 @@ export default function SettingsPage() {
 
         {/* About */}
         <div className="card-base" style={{padding:24,marginBottom:20}}>
-          <div style={{fontSize:14,fontWeight:600,color:'#fafafa',marginBottom:12}}>Smart Money Tracker v25 ⚡</div>
+          <div style={{fontSize:14,fontWeight:600,color:'#fafafa',marginBottom:12}}>Smart Money Tracker v33 ⚡</div>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,fontSize:12,color:'#71717a'}}>
-            <div><span style={{color:'#52525b'}}>当前版本：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>v25 ⚡</span></div>
+            <div><span style={{color:'#52525b'}}>当前版本：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>v33 ⚡</span></div>
             <div><span style={{color:'#52525b'}}>数据周期：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>2026 Q1</span></div>
             <div><span style={{color:'#52525b'}}>追踪机构：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>12家全球机构</span></div>
             <div><span style={{color:'#52525b'}}>数据来源：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>全页面覆盖</span></div>
@@ -110,8 +117,13 @@ export default function SettingsPage() {
               <span style={{color:'#52525b'}}>当前时间：</span>
               <span style={{fontFamily:'JetBrains Mono,monospace',color:'#38bdf8',fontWeight:600}}>{shanghaiNow} 北京时间</span>
             </div>
+            <div style={{gridColumn:'1 / -1',display:'flex',alignItems:'center',gap:6,marginTop:2}}>
+              <div style={{width:6,height:6,borderRadius:'50%',background:serverStatus==='online'?'#22c55e':serverStatus==='offline'?'#ef4444':'#f59e0b'}} />
+              <span style={{color:'#52525b'}}>后端服务：</span>
+              <span style={{fontFamily:'JetBrains Mono,monospace',color:serverStatus==='online'?'#22c55e':serverStatus==='offline'?'#ef4444':'#f59e0b',fontSize:11}}>{serverStatus==='online'?'在线':serverStatus==='offline'?'未连接':'检测中'} {serverStatus==='online'?'· API就绪':''}</span>
+            </div>
           </div>
-          <div style={{marginTop:10,fontSize:12,color:'#3f3f46',lineHeight:1.6}}>v25 ⚡：全页面数据来源Footer体系完成 + InstitutionDetail数据源统一为getAllHoldings() + 2026 Q1数据周期标签 + Settings实时时钟。</div>
+          <div style={{marginTop:10,fontSize:12,color:'#3f3f46',lineHeight:1.6}}>v33 ⚡：Dashboard refreshData()统一接口 + 后端连接实时检测 + 全页面Footer体系。</div>
         </div>
 
         {/* Save */}

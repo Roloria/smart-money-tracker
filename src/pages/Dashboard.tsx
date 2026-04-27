@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { TrendingUp, TrendingDown, Building2, DollarSign, Activity, ArrowUpRight, ArrowDownRight, Star, Clock, TrendingUpCircle, RefreshCw } from 'lucide-react';
 import { institutions, holdings, holdingChanges, formatNumber, formatPercent, typeLabels, typeColors } from '../data/mockData';
-import { getAllHoldings } from '../data/realData';
+import { getAllHoldings, refreshData, getMeta } from '../data/realData';
 
 
 // ── Market Status ──────────────────────────────────────────────────────────────
@@ -57,33 +57,25 @@ export default function Dashboard() {
   const handleRefresh = async () => {
     setRefreshing(true);
     setRefreshMsg(null);
-    try {
-      const r = await fetch('/api/refresh/all', { method: 'POST' });
-      const d = await r.json();
-      if (d.success) {
-        setRefreshMsg('✅ 刷新成功');
-        localStorage.setItem('sm_data_refreshed', new Date().toISOString());
-      } else {
-        setRefreshMsg(`⚠️ ${d.error || '刷新失败'}`);
-      }
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : String(e);
-      if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('net::')) {
-        setRefreshMsg('⚠️ 后端未部署（可忽略，静态数据正常运行）');
-      } else {
-        setRefreshMsg(`⚠️ ${msg.slice(0, 60)}`);
-      }
-    } finally {
-      setRefreshing(false);
-      setTimeout(() => setRefreshMsg(null), 5000);
+    const result = await refreshData();
+    if (result.success) {
+      setRefreshMsg('✅ 刷新成功');
+      localStorage.setItem('sm_data_refreshed', new Date().toISOString());
+    } else {
+      setRefreshMsg(result.message.includes('fetch')
+        ? '⚠️ 后端未部署（可忽略，静态数据正常运行）'
+        : `⚠️ ${result.message}`);
     }
+    setRefreshing(false);
+    setTimeout(() => setRefreshMsg(null), 5000);
   };
 
   const shanghaiTime = now.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
   // 数据质量指示器：港股+A股真实数据占比
   const allHoldingsData = getAllHoldings()
   const realDataCount = allHoldingsData.filter((h: any) => h.market === 'HK' || h.market === 'CN').length
-  const dataQuality = allHoldingsData.length > 0 ? Math.round(realDataCount / allHoldingsData.length * 100) : 0;
+  const dataQuality = allHoldingsData.length > 0 ? Math.round(realDataCount / allHoldingsData.length * 100) : 0
+  const meta = getMeta();
   const instCount = institutions.length;                              // 动态计算，避免硬编码
   const totalValue = institutions.reduce((sum, i) => sum + i.totalValue, 0);
   const totalIncreases = holdings.filter(h => h.changePercent > 0).length;

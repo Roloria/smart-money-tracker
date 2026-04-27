@@ -341,7 +341,7 @@ export default function AlertRules() {
         <span style={{fontSize:10,color:'#52525b',fontFamily:'JetBrains Mono,monospace'}}>预警规则</span>
         <span style={{fontSize:10,color:'#f59e0b',fontFamily:'JetBrains Mono,monospace',fontWeight:600}}>示例数据 · 预警阈值可自定义配置</span>
         <span style={{fontSize:10,color:'#3f3f46'}}>|</span>
-        <span style={{fontSize:10,color:'#52525b',fontFamily:'JetBrains Mono,monospace'}}>v24 ⚡</span>
+        <span style={{fontSize:10,color:'#52525b',fontFamily:'JetBrains Mono,monospace'}}>v30 ⚡</span>
       </div>
     </div>
   );
