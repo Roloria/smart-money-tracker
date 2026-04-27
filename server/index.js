@@ -339,12 +339,16 @@ app.post('/api/alert-trigger', async (req, res) => {
 const distPath = join(ROOT, 'dist');
 if (existsSync(distPath)) {
   app.use(express.static(distPath));
-  app.get('*', (req, res) => {
-    if (!req.path.startsWith('/api')) {
-      res.sendFile(join(distPath, 'index.html'));
-    }
-  });
 }
+
+// SPA fallback for non-API routes
+app.use((req, res, next) => {
+  if (!req.path.startsWith('/api') && existsSync(distPath)) {
+    res.sendFile(join(distPath, 'index.html'));
+  } else {
+    next();
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`🚀 Smart Money API Server running on http://localhost:${PORT}`);
