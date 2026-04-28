@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { SearchIcon, XIcon } from 'lucide-react';
+import { SearchIcon, XIcon, Clock } from 'lucide-react';
 import { holdings, institutions } from '../data/mockData';
 
 const typeLabels: Record<string,string> = {hedge:'对冲基金',sovereign:'主权基金',asset_manager:'资产管理',bank:'银行'};
@@ -36,6 +36,19 @@ const ALL_TICKERS = buildAllTickers();
 export default function SearchPage() {
   const [query, setQuery] = useState('');
   const [activeQuick, setActiveQuick] = useState('');
+  const [recentSearches, setRecentSearches] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem('sm_recent_searches') || '[]'); }
+    catch { return []; }
+  });
+
+  // Save to localStorage when a stock is selected
+  const handleSelect = (ticker: string) => {
+    setQuery(ticker);
+    setActiveQuick(ticker);
+    const updated = [ticker, ...recentSearches.filter(t => t !== ticker)].slice(0, 8);
+    setRecentSearches(updated);
+    localStorage.setItem('sm_recent_searches', JSON.stringify(updated));
+  };
 
   // Dynamic search results
   const filtered = useMemo(() => {
@@ -84,7 +97,7 @@ export default function SearchPage() {
             {filtered.map(s => {
               const badge = marketBadge[s.market];
               return (
-                <div key={s.ticker} onClick={() => { setQuery(s.ticker); setActiveQuick(''); }} style={{
+                <div key={s.ticker} onClick={() => handleSelect(s.ticker)} style={{
                   padding:'10px 14px',cursor:'pointer',display:'flex',alignItems:'center',gap:10,
                   borderBottom:'1px solid #1a1a1a', transition:'background 0.1s',
                 }}
@@ -102,6 +115,28 @@ export default function SearchPage() {
           </div>
         )}
       </div>
+
+      {/* Recent searches */}
+      {recentSearches.length > 0 && (
+        <div style={{marginBottom:16,marginTop:-8}}>
+          <div style={{fontSize:10,color:'#52525b',marginBottom:6,display:'flex',alignItems:'center',gap:4}}>
+            <Clock size={9} />
+            最近搜索
+            <button onClick={() => { setRecentSearches([]); localStorage.removeItem('sm_recent_searches'); }} style={{marginLeft:'auto',background:'none',border:'none',cursor:'pointer',fontSize:9,color:'#3f3f46',padding:0}}>清除</button>
+          </div>
+          <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
+            {recentSearches.map(ticker => (
+              <button key={ticker} onClick={() => handleSelect(ticker)} style={{
+                padding:'3px 10px',borderRadius:20,fontSize:11,fontWeight:600,fontFamily:'JetBrains Mono,monospace',
+                background:'#141414',border:'1px solid #1e1e1e',color:'#38bdf8',cursor:'pointer',
+                display:'flex',alignItems:'center',gap:4,
+              }}>
+                {ticker}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Quick filters row */}
       <div style={{marginBottom:24}}>
