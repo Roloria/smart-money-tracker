@@ -1,9 +1,9 @@
 /**
  * KevinPortfolio — Kevin 真实持仓追踪
  * 显示 Kevin 个人持仓与聪明钱机构持仓的对比分析
- * 数据来源：每日持仓复盘报告（2026-04-21 更新 · 总资金60万）
+ * 数据来源：每日持仓复盘报告（2026-04-28 更新 · 总资金60万）
  * 持仓：小米39.1%/安克创新24.6%/腾讯13%/美团11.6%/泡泡玛特11.6%
- * git commit: 308c9f1（v25 Settings版本统一 + 全页面Footer体系）
+ * git commit: a56813c（v38 Search历史UI + Settings后端状态可视化）
  */
 
 import { useState, useEffect } from 'react';
@@ -62,7 +62,7 @@ const INVESTED_CAPITAL = TOTAL_CAPITAL * INVESTED_RATIO;
 
 const FX: Record<string, number> = { CNY: 1, HKD: 0.93, USD: 7.25 };
 
-// Kevin 真实持仓（来源：每日持仓复盘报告 · 2026-04-17 更新 · 总资金60万）
+// Kevin 真实持仓（来源：每日持仓复盘报告 · 2026-04-28 更新 · 总资金60万）
 // 持仓：小米39.1%/安克创新24.6%/腾讯13%/美团11.6%/泡泡玛特11.6%
 const KEVIN_HOLDINGS: Holding[] = [
   { ticker: '01810.HK', name: '小米集团',   market: 'HK', shares: null, cost: null, sector: 'AI硬件/新能源', allocation: 0.391 },
@@ -644,7 +644,7 @@ export default function KevinPortfolio() {
 
       {/* Footer */}
       <div style={{ fontSize: 11, color: C.text3, lineHeight: 1.7 }}>
-        行情数据：Yahoo Finance · 持仓数据：Signal Arena（2026-04-21）· 成本：参考均价 · 总资金¥60万（实际¥78万）· 汇率USD/CNY 7.25、HKD/CNY 0.93 · ⚠️仅供参考，不构成投资建议 · 数据周期：2026 Q1
+        行情数据：Yahoo Finance · 持仓数据：Signal Arena（2026-04-28）· 成本：参考均价 · 总资金¥60万（实际¥78万）· 汇率USD/CNY 7.25、HKD/CNY 0.93 · ⚠️仅供参考，不构成投资建议 · 数据周期：2026 Q1
       </div>
 
       <style>{`
