@@ -100,6 +100,30 @@ function Pill({ value }: { value: number }) {
 }
 
 
+// ── Market Status ─────────────────────────────────────────────────────────────
+function MarketStatusPill() {
+  const now = new Date()
+  const utcH = now.getUTCHours()
+  const utcM = now.getUTCMinutes()
+  const shH = utcH + 8
+  const day = now.getUTCDay()
+  const wd = day >= 1 && day <= 5
+  const usO = wd && ((shH > 21 || (shH === 21 && utcM >= 30)) || shH < 4)
+  const hkO = wd && ((shH > 1 || (shH === 1 && utcM >= 30)) && shH < 8)
+  const cnO = wd && shH >= 9 && shH < 15
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 9999, background: '#0d0d0d', border: '1px solid #1e1e1e', fontSize: 10 }}>
+      {[['🇺🇸', usO], ['🇭🇰', hkO], ['🇨🇳', cnO]].map(([m, o]) => (
+        <span key={m as string} style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+          <div style={{ width: 5, height: 5, borderRadius: '50%', background: o ? '#22c55e' : '#3f3f46', boxShadow: o ? '0 0 4px #22c55e' : 'none' }} />
+          <span style={{ color: o ? '#22c55e' : '#3f3f46', fontWeight: o ? 600 : 400 }}>{m}</span>
+          <span style={{ color: o ? '#22c55e' : '#52525b', fontSize: 9 }}>{o ? '开' : '休'}</span>
+        </span>
+      ))}
+    </div>
+  )
+}
+
 // ── Toggle ────────────────────────────────────────────────────────────────────
 function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
   return (
@@ -709,6 +733,8 @@ export default function SmartMoney() {
               <Globe size={11} />
               {dataSourceLabel}
             </div>
+            {/* Market Status: US / HK / CN */}
+            <MarketStatusPill />
             <button
               onClick={() => setShowDataSourcePanel(true)}
               style={{
