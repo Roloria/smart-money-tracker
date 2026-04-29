@@ -2,7 +2,7 @@
 
 > 追踪全球顶级主权基金与对冲机构的真实持仓，让散户也能跟踪"聪明钱"的流向
 
-**线上地址：** https://ofmo8g11nrke.space.minimaxi.com（v47 ⚡ · 市场状态指示器 · Changes全量港A股数据 · 实时持仓异动面板 · Dashboard迷你幅度条）
+**线上地址：** https://ztw7cfodob8j.space.minimaxi.com（v49 ⚡ · 市场状态指示器 · Changes全量港A股数据 · 实时持仓异动面板 · Dashboard迷你幅度条 · 孤立文件清理）
 
 > v39 新增：**🔧 TypeScript 严格模式** — SmartMoney.tsx StatCard/icon类型/NAV数组全部迁移至 FC<> 类型定义，零 any 残留；**📊 Dashboard近期持仓异动面板** — 主页新增近期大额增持/减持机构动态卡片
 
