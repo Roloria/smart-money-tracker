@@ -176,6 +176,32 @@ export default function SearchPage() {
             <span style={{marginLeft:'auto',fontSize:12,color:'#52525b',fontFamily:'JetBrains Mono,monospace'}}>{stockHolders.length} 家机构持有</span>
           </div>
 
+          {/* Institutional type breakdown mini-bar */}
+          {(() => {
+            const breakdown: Record<string, number> = {};
+            stockHolders.forEach(h => {
+              const inst = institutions.find(i => i.id === h.institutionId);
+              const t = inst?.type ?? 'asset_manager';
+              breakdown[t] = (breakdown[t] || 0) + 1;
+            });
+            const total = stockHolders.length;
+            const entries = Object.entries(breakdown).sort((a, b) => b[1] - a[1]);
+            return (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: 10, color: '#3f3f46' }}>机构类型</span>
+                {entries.map(([type, count]) => {
+                  const pct = Math.round((count / total) * 100);
+                  return (
+                    <div key={type} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <div style={{ height: 6, width: `${pct * 1.2}px`, minWidth: 4, maxWidth: 80, background: typeColors[type] ?? '#38bdf8', borderRadius: 3, opacity: 0.75 }} />
+                      <span style={{ fontSize: 10, color: '#52525b', fontFamily: 'JetBrains Mono, monospace' }}>{typeLabels[type] ?? type} {count}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
+
           {/* Summary cards */}
           <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12,marginBottom:16}}>
             <div className="stat-card" style={{padding:'14px 16px'}}>
