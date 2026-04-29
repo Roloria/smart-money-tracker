@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { TrendingUp, TrendingDown, Sparkles, XCircle, Filter, BarChart3 } from 'lucide-react';
-import { holdingChanges, institutions, formatNumber, formatPercent, formatShares, holdings } from '../data/mockData';
+import { TrendingUp, TrendingDown, Sparkles, XCircle, Filter, BarChart3, RefreshCw } from 'lucide-react';
+import { institutions, formatNumber, formatPercent, formatShares, holdings } from '../data/mockData';
+import { getAllChanges } from '../data/realData';
 
 const typeFilters = [
   { label: '全部', value: 'all', icon: null },
@@ -34,7 +35,9 @@ export default function Changes() {
   const [sectorFilter, setSectorFilter] = useState('all');
   const [marketFilter, setMarketFilter] = useState('all');
 
-  const filtered = holdingChanges.filter(c => {
+  // Use realData (includes HK + CN changes from SEC EDGAR / HKEX / QFII)
+  const allChanges = getAllChanges();
+  const filtered = allChanges.filter(c => {
     if (typeFilter !== 'all' && c.changeType !== typeFilter) return false;
     if (instFilter !== 'all' && c.institutionId !== Number(instFilter)) return false;
     if (sectorFilter !== 'all' && TICKER_SECTOR[c.stockTicker] !== sectorFilter) return false;
@@ -205,7 +208,10 @@ export default function Changes() {
 
       {/* Footer: data source info */}
       <div style={{display:'flex',alignItems:'center',justifyContent:'flex-end',gap:8,marginTop:16,padding:'0 4px'}}>
-        <span style={{fontSize:10,color:'#52525b',fontFamily:'JetBrains Mono,monospace'}}>数据来源</span>
+        <span style={{fontSize:10,color:'#52525b',fontFamily:'JetBrains Mono,monospace'}}>共</span>
+        <span style={{fontSize:10,color:'#f59e0b',fontFamily:'JetBrains Mono,monospace',fontWeight:700}}>{allChanges.length}</span>
+        <span style={{fontSize:10,color:'#52525b',fontFamily:'JetBrains Mono,monospace'}}>条异动记录</span>
+        <span style={{fontSize:10,color:'#3f3f46'}}>·</span>
         <span style={{fontSize:10,color:'#38bdf8',fontFamily:'JetBrains Mono,monospace',fontWeight:600}}>SEC EDGAR 13F · 东方财富 QFII · 港交所披露易</span>
         <span style={{fontSize:10,color:'#3f3f46'}}>|</span>
         <span style={{fontSize:10,color:'#52525b',fontFamily:'JetBrains Mono,monospace'}}>2026 Q1</span>
