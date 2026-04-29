@@ -106,9 +106,9 @@ export default function SettingsPage() {
 
         {/* About */}
         <div className="card-base" style={{padding:24,marginBottom:20}}>
-          <div style={{fontSize:14,fontWeight:600,color:'#fafafa',marginBottom:12}}>Smart Money Tracker v38 ⚡</div>
+          <div style={{fontSize:14,fontWeight:600,color:'#fafafa',marginBottom:12}}>Smart Money Tracker v47 ⚡</div>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,fontSize:12,color:'#71717a'}}>
-            <div><span style={{color:'#52525b'}}>当前版本：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>v38 ⚡</span></div>
+            <div><span style={{color:'#52525b'}}>当前版本：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>v47 ⚡</span></div>
             <div><span style={{color:'#52525b'}}>数据周期：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>2026 Q1</span></div>
             <div><span style={{color:'#52525b'}}>追踪机构：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>12家全球机构</span></div>
             <div><span style={{color:'#52525b'}}>数据来源：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>全页面覆盖</span></div>
@@ -123,7 +123,7 @@ export default function SettingsPage() {
               <span style={{fontFamily:'JetBrains Mono,monospace',color:serverStatus==='online'?'#22c55e':serverStatus==='offline'?'#ef4444':'#f59e0b',fontSize:11}}>{serverStatus==='online'?'在线':serverStatus==='offline'?'未连接':'检测中'} {serverStatus==='online'?'· API就绪':''}</span>
             </div>
           </div>
-          <div style={{marginTop:10,fontSize:12,color:'#3f3f46',lineHeight:1.6}}>v38 ⚡：搜索历史 + 后端连接实时检测 + Changes汇总统计 + 全页面Footer体系。</div>
+          <div style={{marginTop:10,fontSize:12,color:'#3f3f46',lineHeight:1.6}}>v47 ⚡：市场状态指示器 + Changes全量数据 + 实时持仓异动面板 + Dashboard迷你幅度条。</div>
         </div>
 
         {/* Save */}
