@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, lazy, Suspense } from 'react'
+import { useState, useMemo, useEffect, lazy, Suspense, type FC } from 'react'
 import {
   BarChart3, Building2, TrendingUp, TrendingDown,
   Search, Bell, Settings, ChevronRight,
@@ -122,7 +122,7 @@ function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) =>
 
 // ── Stat Card ─────────────────────────────────────────────────────────────────
 function StatCard({ icon: Icon, label, value, sub, color }: {
-  icon: any; label: string; value: string; sub?: string; color?: string
+  icon: FC<{size?:number;color?:string;className?:string}>; label: string; value: string; sub?: string; color?: string
 }) {
   return (
     <div style={{
@@ -526,7 +526,7 @@ function ChangesBar({ changes }: { changes: HoldingChange[] }) {
         <YAxis tick={{ fill: '#64748b', fontSize: 11, fontFamily: 'JetBrains Mono' }} tickFormatter={(v: number) => `${v}%`} />
         <Tooltip
           contentStyle={{ backgroundColor: '#13141f', border: '1px solid #1e2030', borderRadius: 8, fontSize: 12 }}
-          formatter={(val: any) => [typeof val === 'number' ? `${val > 0 ? '+' : ''}${val.toFixed(2)}%` : val, '变化']}
+          formatter={(val: number | string) => [typeof val === 'number' ? `${val > 0 ? '+' : ''}${(val as number).toFixed(2)}%` : val, '变化']}
         />
         <Bar dataKey="pct" radius={[3, 3, 0, 0]}>
           {data.map((entry: { pct: number }, i: number) => (
@@ -540,7 +540,7 @@ function ChangesBar({ changes }: { changes: HoldingChange[] }) {
 
 // ── App ────────────────────────────────────────────────────────────────────────
 type Tab = 'overview' | 'institutions' | 'search' | 'changes' | 'alerts' | 'ai' | 'rankings' | 'overlap' | 'mine' | 'smallcap' | 'fundflow' | 'settings'
-const NAV: { key: Tab; label: string; icon: any }[] = [
+const NAV: { key: Tab; label: string; icon: FC<{size?:number;color?:string;className?:string}> }[] = [
   { key: 'overview', label: '总览', icon: BarChart3 },
   { key: 'institutions', label: '机构', icon: Building2 },
   { key: 'search', label: '搜索', icon: Search },
