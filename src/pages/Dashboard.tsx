@@ -192,6 +192,45 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Recent Holdings Changes Panel */}
+      <div style={{ marginBottom: 32 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+          <Activity size={16} color="#a78bfa" />
+          <h2 style={{ fontSize: 16, fontWeight: 600, color: '#fafafa', margin: 0 }}>近期持仓异动</h2>
+          <span style={{ fontSize: 11, color: '#52525b', marginLeft: 4 }}>（按变化幅度排序 · 2026 Q1）</span>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10 }}>
+          {recentChanges.slice(0, 10).map((change, i) => {
+            const isUp = change.changePercent > 0;
+            const color = isUp ? '#22c55e' : '#ef4444';
+            const bg = isUp ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)';
+            const border = isUp ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)';
+            const instName = institutions.find(it => it.id === change.institutionId)?.name ?? '机构';
+            const typeLabel = change.changeType === 'new' ? '新建仓' : change.changeType === 'exited' ? '退出' : (isUp ? '增持' : '减持');
+            return (
+              <div key={i} style={{ background: bg, border: `1px solid ${border}`, borderRadius: 10, padding: '10px 12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: '#fafafa', fontFamily: 'JetBrains Mono, monospace' }}>{change.stockName}</span>
+                  {isUp
+                    ? <ArrowUpRight size={12} color={color} />
+                    : <ArrowDownRight size={12} color={color} />
+                  }
+                </div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: color, fontFamily: 'JetBrains Mono, monospace', marginBottom: 2 }}>
+                  {isUp ? '+' : ''}{change.changePercent}%
+                </div>
+                <div style={{ fontSize: 10, color: '#71717a' }}>
+                  {instName} · {typeLabel}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <Link to="/changes" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4, fontSize: 11, color: '#38bdf8', textDecoration: 'none', marginTop: 8, padding: '4px 0' }}>
+          查看全部异动 →
+        </Link>
+      </div>
+
       {/* Institution Cards */}
       <div style={{ marginBottom: 32 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
