@@ -207,6 +207,9 @@ export default function Dashboard() {
             const border = isUp ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)';
             const instName = institutions.find(it => it.id === change.institutionId)?.name ?? '机构';
             const typeLabel = change.changeType === 'new' ? '新建仓' : change.changeType === 'exited' ? '退出' : (isUp ? '增持' : '减持');
+            // Mini spark-bar: show relative magnitude (max 38.5% → 100%)
+            const absMag = Math.min(Math.abs(change.changePercent) / 40, 1);
+            const barWidth = Math.round(absMag * 100);
             return (
               <div key={i} style={{ background: bg, border: `1px solid ${border}`, borderRadius: 10, padding: '10px 12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
@@ -216,8 +219,12 @@ export default function Dashboard() {
                     : <ArrowDownRight size={12} color={color} />
                   }
                 </div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: color, fontFamily: 'JetBrains Mono, monospace', marginBottom: 2 }}>
+                <div style={{ fontSize: 16, fontWeight: 700, color: color, fontFamily: 'JetBrains Mono, monospace', marginBottom: 4 }}>
                   {isUp ? '+' : ''}{change.changePercent}%
+                </div>
+                {/* Mini magnitude bar */}
+                <div style={{ height: 3, background: '#1e1e1e', borderRadius: 2, marginBottom: 5, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${barWidth}%`, background: color, borderRadius: 2, opacity: 0.7 }} />
                 </div>
                 <div style={{ fontSize: 10, color: '#71717a' }}>
                   {instName} · {typeLabel}
