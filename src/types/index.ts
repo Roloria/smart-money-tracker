@@ -26,6 +26,8 @@ export interface Holding {
   _dataSource?: string;
   /** 是否来自真实数据源 */
   _isRealData?: boolean;
+  /** 是否为中小盘股（市值<500亿） */
+  _isSmallCap?: boolean;
 }
 
 export interface AlertRule {

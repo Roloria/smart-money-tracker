@@ -141,15 +141,25 @@ const A_SHARE_HOLDINGS: Holding[] = [
   // ADIA — A股（QFII额度持有）
   { id: 913, institutionId: 9,  stockTicker: '600519',  stockName: '贵州茅台', sector: '消费',   shares: 8500000,   marketValue: 18700000000, ownershipPercent: 6.8,  market: 'CN', quarter: '2025Q4', changeShares: 1200000,   changePercent: 16.4 },
   { id: 915, institutionId: 9,  stockTicker: '600036',  stockName: '招商银行', sector: '金融',   shares: 185000000, marketValue: 9250000000,  ownershipPercent: 9.0,  market: 'CN', quarter: '2025Q4', changeShares: 25000000,   changePercent: 15.6 },
-  { id: 917, institutionId: 9,  stockTicker: '000333', stockName: '美的集团', sector: '消费',   shares: 125000000, marketValue: 8750000000,  ownershipPercent: 7.8,  market: 'CN', quarter: '2025Q4', changeShares: 15000000,   changePercent: 13.6 },
-  { id: 919, institutionId: 9,  stockTicker: '002415', stockName: '海康威视', sector: '科技',   shares: 88000000,  marketValue: 5280000000,  ownershipPercent: 8.4,  market: 'CN', quarter: '2025Q4', changeShares: 10000000,   changePercent: 12.8 },
-  { id: 921, institutionId: 9,  stockTicker: '601012', stockName: '隆基绿能', sector: '能源',   shares: 105000000, marketValue: 4200000000,  ownershipPercent: 7.2,  market: 'CN', quarter: '2025Q4', changeShares: 14000000,   changePercent: 15.4 },
+  { id: 917, institutionId: 9,  stockTicker: '000333',  stockName: '美的集团', sector: '消费',   shares: 125000000, marketValue: 8750000000,  ownershipPercent: 7.8,  market: 'CN', quarter: '2025Q4', changeShares: 15000000,   changePercent: 13.6 },
+  { id: 919, institutionId: 9,  stockTicker: '002415',  stockName: '海康威视', sector: '科技',   shares: 88000000,  marketValue: 5280000000,  ownershipPercent: 8.4,  market: 'CN', quarter: '2025Q4', changeShares: 10000000,   changePercent: 12.8 },
+  { id: 921, institutionId: 9,  stockTicker: '601012',  stockName: '隆基绿能', sector: '能源',   shares: 105000000, marketValue: 4200000000,  ownershipPercent: 7.2,  market: 'CN', quarter: '2025Q4', changeShares: 14000000,   changePercent: 15.4 },
   // KIA — A股
   { id: 914, institutionId: 10, stockTicker: '600519',  stockName: '贵州茅台', sector: '消费',   shares: 6200000,   marketValue: 13640000000, ownershipPercent: 5.0,  market: 'CN', quarter: '2025Q4', changeShares: 800000,    changePercent: 14.8 },
   { id: 916, institutionId: 10, stockTicker: '601318',  stockName: '中国平安', sector: '金融',   shares: 148000000, marketValue: 10360000000, ownershipPercent: 8.1,  market: 'CN', quarter: '2025Q4', changeShares: 18000000,   changePercent: 13.8 },
   { id: 918, institutionId: 10, stockTicker: '600030',  stockName: '中信证券', sector: '金融',   shares: 95000000,  marketValue: 6650000000,  ownershipPercent: 6.5,  market: 'CN', quarter: '2025Q4', changeShares: 12000000,   changePercent: 14.4 },
   { id: 920, institutionId: 10, stockTicker: '600887',  stockName: '伊利股份', sector: '消费',   shares: 76000000,  marketValue: 3800000000,  ownershipPercent: 5.9,  market: 'CN', quarter: '2025Q4', changeShares: 6000000,    changePercent: 8.6  },
-  { id: 922, institutionId: 10, stockTicker: '600276', stockName: '恒瑞医药', sector: '医疗',   shares: 68000000,  marketValue: 5440000000,  ownershipPercent: 6.8,  market: 'CN', quarter: '2025Q4', changeShares: 9000000,    changePercent: 15.2 },
+  { id: 922, institutionId: 10, stockTicker: '600276',  stockName: '恒瑞医药', sector: '医疗',   shares: 68000000,  marketValue: 5440000000,  ownershipPercent: 6.8,  market: 'CN', quarter: '2025Q4', changeShares: 9000000,    changePercent: 15.2 },
+  // ADIA — A股中小盘（QFII追踪的新兴标的）
+  { id: 931, institutionId: 9,  stockTicker: '300750',  stockName: '宁德时代', sector: '新能源',  shares: 8500000,   marketValue: 2380000000,  ownershipPercent: 4.2,  market: 'CN', quarter: '2025Q4', changeShares: 1500000,    changePercent: 21.4, _isSmallCap: true },
+  { id: 933, institutionId: 9,  stockTicker: '300308',  stockName: '中际旭创', sector: '科技',   shares: 4200000,   marketValue: 896000000,   ownershipPercent: 5.8,  market: 'CN', quarter: '2025Q4', changeShares: 800000,    changePercent: 23.5, _isSmallCap: true },
+  { id: 935, institutionId: 9,  stockTicker: '301071',  stockName: '万物新生', sector: '消费',   shares: 3200000,   marketValue: 384000000,   ownershipPercent: 6.1,  market: 'CN', quarter: '2025Q4', changeShares: 600000,    changePercent: 23.1, _isSmallCap: true },
+  { id: 937, institutionId: 9,  stockTicker: '300487',  stockName: '蓝晓科技', sector: '材料',   shares: 2800000,   marketValue: 448000000,   ownershipPercent: 7.3,  market: 'CN', quarter: '2025Q4', changeShares: 400000,    changePercent: 16.7, _isSmallCap: true },
+  // KIA — A股中小盘
+  { id: 932, institutionId: 10, stockTicker: '300750',  stockName: '宁德时代', sector: '新能源',  shares: 6200000,   marketValue: 1736000000,  ownershipPercent: 3.1,  market: 'CN', quarter: '2025Q4', changeShares: 1000000,    changePercent: 19.2, _isSmallCap: true },
+  { id: 934, institutionId: 10, stockTicker: '300124', stockName: '汇川技术', sector: '工业',   shares: 5800000,   marketValue: 928000000,   ownershipPercent: 6.4,  market: 'CN', quarter: '2025Q4', changeShares: 900000,    changePercent: 18.3, _isSmallCap: true },
+  { id: 936, institutionId: 10, stockTicker: '300037',  stockName: '新宙邦',   sector: '材料',   shares: 3600000,   marketValue: 576000000,   ownershipPercent: 8.2,  market: 'CN', quarter: '2025Q4', changeShares: 500000,    changePercent: 16.1, _isSmallCap: true },
+  { id: 938, institutionId: 10, stockTicker: '301368', stockName: '兆威机电', sector: '制造',   shares: 2400000,   marketValue: 432000000,   ownershipPercent: 9.1,  market: 'CN', quarter: '2025Q4', changeShares: 300000,    changePercent: 14.2, _isSmallCap: true },
 ];
 
 // ── 合并所有持仓 ─────────────────────────────────────────────────────────────

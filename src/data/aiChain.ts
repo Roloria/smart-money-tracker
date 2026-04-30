@@ -4,6 +4,7 @@
  */
 
 import { getAllHoldings } from './realData';
+import { institutions } from './mockData';
 import type { Holding } from '../types';
 
 // ── AI 产业链分层定义 ─────────────────────────────────────────────────────────
@@ -193,6 +194,12 @@ export function getSmallCapSignals(): SmallCapSignal[] {
   const trackedSet = new Set(SMALL_CAP_TRACKED.map(s => s.ticker));
   const trackedMeta = new Map(SMALL_CAP_TRACKED.map(s => [s.ticker, s]));
 
+  // Also include holdings marked as _isSmallCap from realData
+  const smallCapTickers = new Set(
+    all.filter(h => (h as any)._isSmallCap === true).map(h => h.stockTicker)
+  );
+  smallCapTickers.forEach(t => trackedSet.add(t));
+
   const signals: SmallCapSignal[] = [];
 
   trackedSet.forEach(ticker => {
@@ -201,8 +208,8 @@ export function getSmallCapSignals(): SmallCapSignal[] {
 
     const meta = trackedMeta.get(ticker)!;
     const instNames = holdings.map(h => {
-      const inst = (all as Holding[]).find((x: Holding) => x.institutionId === h.institutionId);
-      return inst?.stockName || `机构${h.institutionId}`;
+      const inst = institutions.find(i => i.id === h.institutionId);
+      return inst?.name || `机构${h.institutionId}`;
     });
     const avgChange = holdings.reduce((s, h) => s + h.changePercent, 0) / holdings.length;
 
