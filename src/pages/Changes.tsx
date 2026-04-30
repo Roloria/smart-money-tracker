@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { TrendingUp, TrendingDown, Sparkles, XCircle, Filter, BarChart3, RefreshCw } from 'lucide-react';
 import { institutions, formatNumber, formatPercent, formatShares, holdings } from '../data/mockData';
-import { getAllChanges } from '../data/realData';
+import { getAllChanges, getLastUpdated, getDataAgeLabel } from '../data/realData';
 
 const typeFilters = [
   { label: '全部', value: 'all', icon: null },
@@ -214,7 +214,7 @@ export default function Changes() {
         <span style={{fontSize:10,color:'#3f3f46'}}>·</span>
         <span style={{fontSize:10,color:'#38bdf8',fontFamily:'JetBrains Mono,monospace',fontWeight:600}}>SEC EDGAR 13F · 东方财富 QFII · 港交所披露易</span>
         <span style={{fontSize:10,color:'#3f3f46'}}>|</span>
-        <span style={{fontSize:10,color:'#52525b',fontFamily:'JetBrains Mono,monospace'}}>2026 Q1</span>
+        <span style={{fontSize:10,color:'#71717a',fontFamily:'JetBrains Mono,monospace'}}>数据截至 {getLastUpdated()}（{getDataAgeLabel()}）</span>
       </div>
     </div>
   );
