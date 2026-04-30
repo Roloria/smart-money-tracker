@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { TrendingUp, TrendingDown, Building2, DollarSign, Activity, ArrowUpRight, ArrowDownRight, Star, Clock, TrendingUpCircle, RefreshCw } from 'lucide-react';
 import { institutions, holdings, holdingChanges, formatNumber, formatPercent, typeLabels, typeColors } from '../data/mockData';
-import { getAllHoldings, refreshData, getMeta } from '../data/realData';
+import { getAllHoldings, refreshData, getMeta, getDataAgeLabel } from '../data/realData';
 
 
 // ── Market Status ──────────────────────────────────────────────────────────────
@@ -122,9 +122,9 @@ export default function Dashboard() {
               </div>
               <span style={{ color: '#27272a' }}>|</span>
               <Clock size={10} />
-              <span>{shanghaiTime}</span>
+              <span>数据截至 {'2026-02-14'}（{getDataAgeLabel()}）</span>
               <span style={{ color: '#27272a' }}>|</span>
-              <span>SEC EDGAR · 2026 Q1</span>
+              <span style={{color:"#38bdf8"}}>SEC EDGAR · 港交所 · QFII · 2026 Q1</span>
               <span style={{ color: '#27272a' }}>|</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: 3, background: '#141414', border: '1px solid #1e1e1e', borderRadius: 4, padding: '1px 6px' }}>
                 <span style={{ fontSize: 9, color: '#52525b' }}>真实数据</span>

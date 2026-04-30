@@ -105,6 +105,17 @@ export function getLastUpdated(): string {
   );
   return sorted[0]?.lastUpdated || '—';
 }
+export function getDataAgeLabel(): string {
+  const sorted = [...DATA_SOURCES].sort((a, b) =>
+    new Date(b.lastUpdatedISO).getTime() - new Date(a.lastUpdatedISO).getTime()
+  );
+  const newest = sorted[0];
+  if (!newest) return '—';
+  const days = Math.round((Date.now() - new Date(newest.lastUpdatedISO).getTime()) / 86400000);
+  if (days === 0) return '今天';
+  if (days === 1) return '昨天';
+  return `${days}天前`;
+}
 
 // ── 数据源检测 ───────────────────────────────────────────────────────────────
 function getHoldingSource(h: Holding): DataSourceInfo {
