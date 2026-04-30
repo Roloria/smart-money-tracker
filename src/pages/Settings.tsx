@@ -108,7 +108,7 @@ export default function SettingsPage() {
         <div className="card-base" style={{padding:24,marginBottom:20}}>
           <div style={{fontSize:14,fontWeight:600,color:'#fafafa',marginBottom:12}}>Smart Money Tracker v47 ⚡</div>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,fontSize:12,color:'#71717a'}}>
-            <div><span style={{color:'#52525b'}}>当前版本：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>v47 ⚡</span></div>
+            <div><span style={{color:'#52525b'}}>当前版本：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>v57 ⚡</span></div>
             <div><span style={{color:'#52525b'}}>数据周期：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>2026 Q1</span></div>
             <div><span style={{color:'#52525b'}}>追踪机构：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>12家全球机构</span></div>
             <div><span style={{color:'#52525b'}}>数据来源：</span><span style={{fontFamily:'JetBrains Mono,monospace',color:'#a1a1aa'}}>全页面覆盖</span></div>
