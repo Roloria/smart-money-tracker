@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { SearchIcon, XIcon, Clock } from 'lucide-react';
-import { holdings, institutions } from '../data/mockData';
+import { institutions } from '../data/mockData';
+import { getAllHoldings } from '../data/realData';
 
 const typeLabels: Record<string,string> = {hedge:'对冲基金',sovereign:'主权基金',asset_manager:'资产管理',bank:'银行'};
 const typeColors: Record<string,string> = {hedge:'#f59e0b',sovereign:'#22c55e',asset_manager:'#38bdf8',bank:'#a78bfa'};
@@ -21,7 +22,7 @@ function formatPercent(n:number):string { return`${n>0?'+':''}${n.toFixed(1)}%`;
 // Derive all unique tickers from holdings, sorted by total market value
 function buildAllTickers() {
   const map = new Map<string, {name: string; marketValue: number}>();
-  holdings.forEach(h => {
+  getAllHoldings().forEach(h => {
     const existing = map.get(h.stockTicker);
     if (!existing || existing.marketValue < h.marketValue) {
       map.set(h.stockTicker, { name: h.stockName, marketValue: h.marketValue });
@@ -61,7 +62,7 @@ export default function SearchPage() {
 
   const selectedStock = activeQuick || query.toUpperCase().replace(/\s/g,'');
   const stockHolders = selectedStock
-    ? holdings.filter(h => h.stockTicker === selectedStock).sort((a,b) => b.marketValue - a.marketValue)
+    ? getAllHoldings().filter(h => h.stockTicker === selectedStock).sort((a,b) => b.marketValue - a.marketValue)
     : [];
 
   const selectedInfo = ALL_TICKERS.find(t => t.ticker === selectedStock);
