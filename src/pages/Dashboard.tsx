@@ -122,7 +122,7 @@ export default function Dashboard() {
               </div>
               <span style={{ color: '#27272a' }}>|</span>
               <Clock size={10} />
-              <span>数据截至 {'2026-02-14'}（{getDataAgeLabel()}）</span>
+              <span>数据截至 {getLastUpdated()}（{getDataAgeLabel()}）</span>
               <span style={{ color: '#27272a' }}>|</span>
               <span style={{color:"#38bdf8"}}>SEC EDGAR · 港交所 · QFII · 2026 Q1</span>
               <span style={{ color: '#27272a' }}>|</span>

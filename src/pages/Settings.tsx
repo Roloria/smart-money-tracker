@@ -123,7 +123,7 @@ export default function SettingsPage() {
               <span style={{fontFamily:'JetBrains Mono,monospace',color:serverStatus==='online'?'#22c55e':serverStatus==='offline'?'#ef4444':'#f59e0b',fontSize:11}}>{serverStatus==='online'?'在线':serverStatus==='offline'?'未连接':'检测中'} {serverStatus==='online'?'· API就绪':''}</span>
             </div>
           </div>
-          <div style={{marginTop:10,fontSize:12,color:'#3f3f46',lineHeight:1.6}}>v47 ⚡：市场状态指示器 + Changes全量数据 + 实时持仓异动面板 + Dashboard迷你幅度条。</div>
+          <div style={{marginTop:10,fontSize:12,color:'#3f3f46',lineHeight:1.6}}>v60 ⚡：Dashboard硬编码日期修复 + 版本同步（2026-05-01）。</div>
         </div>
 
         {/* Save */}
