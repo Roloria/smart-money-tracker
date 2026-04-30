@@ -6,9 +6,23 @@
 import { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, RefreshCw, Loader2, Zap } from 'lucide-react';
 import { holdings as allHoldings } from '../data/mockData';
+import { getAllHoldings } from '../data/realData';
 
-// Kevin 持仓（已清除，待用户填充）
-const KEVIN_HOLDINGS: { ticker: string; name: string; market: 'CN' | 'HK'; shares: number | null; cost: number | null; sector: string; allocation: number }[] = [];
+// Kevin 持仓（2026-04-30 更新）
+const KEVIN_HOLDINGS: { ticker: string; name: string; market: 'CN' | 'HK'; shares: number | null; cost: number | null; sector: string; allocation: number }[] = [
+  // 泡泡玛特（港股）— Signal Arena 实盘 1400股 建仓约¥139
+  { ticker: '9992.HK', name: '泡泡玛特', market: 'HK', shares: 1400, cost: 139, sector: '消费', allocation: 250000 },
+  // 腾讯控股（港股）— Signal Arena 小米7000股换仓+加仓至15万
+  { ticker: '0700.HK', name: '腾讯控股', market: 'HK', shares: null, cost: null, sector: '科技', allocation: 150000 },
+  // 世纪华通（A股）— Signal Arena 持续持有
+  { ticker: '002602', name: '世纪华通', market: 'CN', shares: null, cost: null, sector: '科技', allocation: 180000 },
+  // 天齐锂业（A股）— Signal Arena 新建仓 10万
+  { ticker: '002466', name: '天齐锂业', market: 'CN', shares: null, cost: null, sector: '能源', allocation: 100000 },
+  // 润泽科技（A股）— Signal Arena 新建仓 10万
+  { ticker: '300442', name: '润泽科技', market: 'CN', shares: null, cost: null, sector: '科技', allocation: 100000 },
+  // 安克创新（A股）— Signal Arena 持有中，今日收盘¥125.44（+4.51%）
+  { ticker: '300866', name: '安克创新', market: 'CN', shares: null, cost: null, sector: '消费', allocation: null as unknown as number },
+];
 
 // ── 类型定义 ────────────────────────────────────────────────────────────────
 interface PriceData {
