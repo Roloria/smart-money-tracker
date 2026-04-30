@@ -87,9 +87,17 @@ export const SMALL_CAP_TRACKED: SmallCapMeta[] = [
   { ticker: '002415', name: '海康威视', market: 'CN', marketCap: 60, isNewPosition: false, instAccumulating: true, notes: 'AI 安防龙头，视觉大模型落地' },
   { ticker: '688110', name: '东芯股份', market: 'CN', marketCap: 28, isNewPosition: true, instAccumulating: true, notes: 'AI存储芯片，小市值高弹性' },
   { ticker: '300866', name: '安克创新', market: 'CN', marketCap: 45, isNewPosition: false, instAccumulating: true, notes: 'AI+智能硬件出海，ANKER品牌' },
+  // QFII建仓痕迹 — A股中小盘（来自机构持仓公开披露）
+  { ticker: '300750', name: '宁德时代', market: 'CN', marketCap: 78, isNewPosition: false, instAccumulating: true, notes: 'QFII增持+21%·新能源电池全球龙头' },
+  { ticker: '300308', name: '中际旭创', market: 'CN', marketCap: 32, isNewPosition: false, instAccumulating: true, notes: 'QFII增持+24%·光模块龙头·AI算力需求' },
+  { ticker: '301071', name: '万物新生', market: 'CN', marketCap: 8, isNewPosition: true, instAccumulating: true, notes: 'QFII新建仓·二手消费·ESG赛道' },
+  { ticker: '300487', name: '蓝晓科技', market: 'CN', marketCap: 9, isNewPosition: false, instAccumulating: true, notes: 'QFII增持+17%·盐湖提锂+材料' },
+  { ticker: '300124', name: '汇川技术', market: 'CN', marketCap: 52, isNewPosition: false, instAccumulating: true, notes: 'QFII增持+18%·工业自动化龙头' },
+  { ticker: '300037', name: '新宙邦', market: 'CN', marketCap: 12, isNewPosition: false, instAccumulating: true, notes: 'QFII增持+16%·电解液·新能源材料' },
+  { ticker: '301368', name: '兆威机电', market: 'CN', marketCap: 7, isNewPosition: false, instAccumulating: true, notes: 'QFII增持+14%·精密制造·微型传动' },
   // 港股小盘
-  { ticker: '6690.HK', name: '海尔智家', market: 'HK', marketCap: 42, isNewPosition: false, instAccumulating: true, notes: '智能家居，AI 家电整合' },
-  { ticker: '2319.HK', name: '蒙牛乳业', market: 'HK', marketCap: 28, isNewPosition: false, instAccumulating: false, notes: '消费小盘，估值低位' },
+  { ticker: '6690.HK', name: '海尔智家', market: 'HK', marketCap: 42, isNewPosition: false, instAccumulating: true, notes: 'QFII增持+3.7%·智能家居整合' },
+  { ticker: '2319.HK', name: '蒙牛乳业', market: 'HK', marketCap: 28, isNewPosition: false, instAccumulating: false, notes: 'QFII持仓不变·消费估值低位' },
 ];
 
 // ── AI Layer 过滤 ─────────────────────────────────────────────────────────────
