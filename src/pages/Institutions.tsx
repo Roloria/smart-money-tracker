@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Globe, Filter, Clock } from 'lucide-react';
 import { institutions, formatNumber, typeLabels, typeColors } from '../data/mockData';
-import { getAllHoldings, ALL_CHANGES } from '../data/realData';
+import { getAllHoldings, ALL_CHANGES, getLastUpdated, getDataAgeLabel } from '../data/realData';
 import { getInstitutionSourceInfo } from '../data/realData';
 import type { Holding } from '../types';
 
@@ -186,7 +186,7 @@ export default function Institutions() {
 
       {/* Page footer */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8, marginTop: 24, padding: '0 4px' }}>
-        <span style={{ fontSize: 10, color: '#52525b', fontFamily: 'JetBrains Mono, monospace' }}>数据来源</span>
+        <span style={{fontSize:10,color:'#52525b',fontFamily:'JetBrains Mono,monospace'}}>数据截至 {getLastUpdated()}（{getDataAgeLabel()}）</span>
         <span style={{ fontSize: 10, color: '#38bdf8', fontFamily: 'JetBrains Mono, monospace', fontWeight: 600 }}>SEC EDGAR 13F · 港交所披露易 · 东方财富 QFII</span>
         <span style={{ fontSize: 10, color: '#3f3f46' }}>|</span>
         <span style={{ fontSize: 10, color: '#52525b', fontFamily: 'JetBrains Mono, monospace' }}>2026 Q1</span>
