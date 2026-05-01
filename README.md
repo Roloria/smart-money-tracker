@@ -2,9 +2,10 @@
 
 > 追踪全球顶级主权基金与对冲机构的真实持仓，让散户也能跟踪"聪明钱"的流向
 
-**线上地址：** https://ztw7cfodob8j.space.minimaxi.com（v57 ⚡ · 新增5只持仓股票完整成本+市值+实时行情 · A股中小盘8只持仓 · Dashboard数据时效标注 · Changes/Institutions数据源Footer同步）
+**线上地址：** https://4ixcldsuzv1r.space.minimaxi.com（v60 ⚡ · Dashboard日期动态化 · Settings About版本同步 · 2026-05-01）
 
-> v39 新增：**🔧 TypeScript 严格模式** — SmartMoney.tsx StatCard/icon类型/NAV数组全部迁移至 FC<> 类型定义，零 any 残留；**📊 Dashboard近期持仓异动面板** — 主页新增近期大额增持/减持机构动态卡片
+> v60 新增：**Dashboard日期动态化** — 硬编码'2026-02-14'→getLastUpdated()实时反映；**Settings About版本v47/v57→v60同步**；**版本历史归档**（HEARTBEAT日志归档至memory_archive）
+> v57 新增：**5只持仓股票完整成本+市值+实时行情** — 泡泡玛特/腾讯/世纪华通/天齐/润泽/安克创新，Yahoo Finance实时报价；**A股中小盘8只持仓**（宁德时代/中际旭创/汇川技术/新宙邦等，市值100-500亿）；**Dashboard数据时效标注**；**Changes/Institutions数据源Footer同步**
 
 > v38 新增：**🔍 搜索历史** — 自动保存搜索记录（localStorage，最多8条），重新打开自动恢复
 
