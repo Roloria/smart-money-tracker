@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { TrendingUp, TrendingDown, Building2, DollarSign, Activity, ArrowUpRight, ArrowDownRight, Star, Clock, TrendingUpCircle, RefreshCw } from 'lucide-react';
 import { institutions, holdings, holdingChanges, formatNumber, formatPercent, typeLabels, typeColors } from '../data/mockData';
-import { getAllHoldings, refreshData, getMeta, getDataAgeLabel } from '../data/realData';
+import { getAllHoldings, refreshData, getMeta, getLastUpdated, getDataAgeLabel } from '../data/realData';
 
 
 // ── Market Status ──────────────────────────────────────────────────────────────

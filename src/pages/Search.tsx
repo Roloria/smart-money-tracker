@@ -75,7 +75,7 @@ export default function SearchPage() {
     <div>
       <div style={{marginBottom:28}}>
         <h1 style={{fontSize:24,fontWeight:700,color:'#fafafa',margin:0}}>持仓搜索</h1>
-        <p style={{fontSize:14,color:'#71717a',margin:'4px 0 0'}}>查找哪些机构持有某只股票，覆盖全市场</p>
+        <p style={{fontSize:14,color:'#71717a',margin:'4px 0 0'}}>输入股票代码或名称，查看哪些机构持有</p>
       </div>
 
       {/* Search input */}

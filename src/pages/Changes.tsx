@@ -58,6 +58,19 @@ export default function Changes() {
         <p style={{fontSize:14,color:'#71717a',margin:'4px 0 0'}}>追踪机构季度持仓大幅变化，发现聪明钱动向</p>
       </div>
 
+      {/* Filter summary */}
+      {filtered.length !== allChanges.length && (
+        <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:16,padding:'6px 12px',background:'#1a1a1a',borderRadius:6,fontSize:12}}>
+          <Filter size={11} color="#38bdf8" />
+          <span style={{color:'#71717a'}}>筛选结果：</span>
+          <span style={{color:'#38bdf8',fontWeight:700,fontFamily:'JetBrains Mono,monospace'}}>{filtered.length}</span>
+          <span style={{color:'#3f3f46'}}>/</span>
+          <span style={{color:'#52525b',fontFamily:'JetBrains Mono,monospace'}}>{allChanges.length}</span>
+          <span style={{color:'#52525b'}}>条记录</span>
+          <button onClick={() => { setTypeFilter('all'); setInstFilter('all'); setSectorFilter('all'); setMarketFilter('all'); }} style={{marginLeft:'auto',background:'none',border:'none',color:'#ef4444',cursor:'pointer',fontSize:11,padding:'0 4px'}}>清除筛选</button>
+        </div>
+      )}
+
       {/* Filters */}
       <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:20,flexWrap:'wrap'}}>
         {/* Type filters */}
